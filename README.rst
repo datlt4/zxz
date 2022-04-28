@@ -1,22 +1,16 @@
-The Null Pointer
-================
+The First Pointer
+=================
 
-This is a no-bullshit file hosting and URL shortening service that also runs
-`0x0.st <https://0x0.st>`_. Use with uWSGI.
+This is a no-bullshit file hosting service that also runs
+`0x1a.ro <https://0x1a.ro>`_, which was forked from the wonderful `0x0.st <https://0x0.st>`
 
 Configuration
 -------------
 
-To configure 0x0, copy ``instance/config.example.py`` to ``instance/config.py``, then edit
-it.   Resonable defaults are set, but there's a couple options you'll need to change
-before running 0x0 for the first time.
+To change settings, copy ``config.py.example`` to ``instance/config.py`` and modify to your liking. 
+For more information on instance configuration, see `the Flask documentation <https://flask.palletsprojects.com/en/2.0.x/config/#instance-folders>`_.
 
-By default, the configuration is stored in the Flask instance directory.
-Normally, this is in `./instance`, but it might be different for your system.
-For details, see
-`the Flask documentation <https://flask.palletsprojects.com/en/2.0.x/config/#instance-folders>`_.
-
-To customize the home and error pages, simply create a ``templates`` directory
+To customize the home and error pages, create a ``templates`` directory
 in your instance directory and copy any templates you want to modify there.
 
 If you are running nginx, you should use the ``X-Accel-Redirect`` header.
@@ -90,6 +84,25 @@ Optional:
 .. tip::
     Using compression with SSH (``-C`` option) can significantly
     reduce the bandwidth requirements for graphics.
+
+Docker Build & Run
+------------------ 
+block::
+
+    docker build . -t 0x1a:latest
+
+Then run with Docker-Compose block::
+
+    version: "3"
+    services:
+      "0x1a":
+        image: 0x1a:latest
+          container_name: "0x1a"
+            volumes:
+              - ./upload:/files
+              - ./instance:/python-docker/instance
+              - ./fhost_db.sql:/python-docker/fhost_db.sql
+
 
 
 NSFW Detection
