@@ -33,19 +33,5 @@ jobs:
         env:
           ACTIONS_RUNTIME_TOKEN: ''
         with:
-          load: true
-          tags: ${{ env.REGISTRY_IMAGE }}:test
-
-      - name: Test
-        run: |
-          docker run --env CI=True --rm ${{ env.REGISTRY_IMAGE }}:test
-
-      - name: Build and push digest
-        id: build
-        uses: docker/build-push-action@v4
-        env:
-          ACTIONS_RUNTIME_TOKEN: ''
-        with:
-          platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.REGISTRY_IMAGE }}:latest
