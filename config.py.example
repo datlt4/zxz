@@ -1,0 +1,15 @@
+# Insance?
+FHOST_STORAGE_PATH = "upload/"
+SQLALCHEMY_DATABASE_URI = "sqlite:///fhost_db.sql"
+FHOST_USE_X_ACCEL_REDIRECT = False
+USE_X_SENDFILE = False
+FHOST_MIME_BLACKLIST = [
+    "application/x-dosexec",
+    "application/x-executable",
+    "application/x-hdf5",
+    "application/java-archive"
+]
+MAX_CONTENT_LENGTH = 256 * 1024 * 1024
+MAX_URL_LENGTH = 0
+PREFERRED_URL_SCHEME = "https"
+URL_ALPHABET = "hd2uCRYFteibPwq0SWBInTpA_jcZL5GDEQKz314Ulk87Jors9vNHgfaOmMXy6Vx-"

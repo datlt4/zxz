@@ -54,6 +54,7 @@ app.config.update(
         "audio/flac" : ".flac",
         "image/gif" : ".gif",
         "image/jpeg" : ".jpg",
+        "image/jpeg" : ".jpeg",
         "image/png" : ".png",
         "image/svg+xml" : ".svg",
         "video/webm" : ".webm",
