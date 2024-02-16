@@ -10,7 +10,7 @@
 
 #finfo {
     background: $boost;
-    height: 12;
+    height: 25%;
     width: 1fr;
     box-sizing: content-box;
 }

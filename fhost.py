@@ -43,8 +43,6 @@ app = Flask(__name__, instance_relative_config=True)
 app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     PREFERRED_URL_SCHEME = "https", # nginx users: make sure to have 'uwsgi_param UWSGI_SCHEME $scheme;' in your config
-    MAX_CONTENT_LENGTH = 256 * 1024 * 1024,
-    MAX_URL_LENGTH = 4096,
     USE_X_SENDFILE = False,
     FHOST_USE_X_ACCEL_REDIRECT = True, # expect nginx by default
     FHOST_STORAGE_PATH = "up",
