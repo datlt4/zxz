@@ -1,0 +1,31 @@
+version: "3"
+
+networks:
+  "0x0":
+    external: false
+
+
+volumes:
+  upload_volume:
+    driver: local
+  # instance_volume:
+  #   driver: local
+  fhost_db_volume:
+    driver: local
+
+services:
+  "0x0":
+    image: 0x0.latest
+    container_name: "0x0"
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    restart: always
+    volumes:
+      - upload_volume:/files
+      # - ./instance:/python-docker/instance
+      - fhost_db_volume:/python-docker/fhost_db.sql
+    networks:
+      - "0x0"
+    ports:
+      - "8003:5000"
