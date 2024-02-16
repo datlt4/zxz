@@ -1,9 +1,8 @@
 version: "3"
 
 networks:
-  "0x0":
+  zxz:
     external: false
-
 
 volumes:
   upload_volume:
@@ -14,9 +13,9 @@ volumes:
     driver: local
 
 services:
-  "0x0":
-    image: 0x0.latest
-    container_name: "0x0"
+  zxz:
+    image: zxz.latest
+    container_name: zxz
     build:
       context: ./
       dockerfile: Dockerfile
@@ -26,6 +25,37 @@ services:
       # - ./instance:/python-docker/instance
       - fhost_db_volume:/python-docker/fhost_db.sql
     networks:
-      - "0x0"
+      - zxz
     ports:
       - "8003:5000"
+
+  backup:
+    image: alpine
+    tty: false
+    environment:
+      - TARGET=${TARGET}
+    volumes:
+      - upload_volume:/upload_data
+      - fhost_db_volume:/fhost_db_data
+      - ./backup:/backup
+    command: >-
+      sh -c "
+        cd /upload_data && tar -czf /backup/upload_data_$${TARGET}.tar.gz *;
+        cd /fhost_db_data && tar -czf /backup/fhost_db_data_$${TARGET}.tar.gz *;
+        "
+
+  restore:
+    image: alpine
+    environment:
+      - TARGET=${TARGET}
+    volumes:
+      - upload_volume:/upload_data
+      - fhost_db_volume:/fhost_db_data
+      - ./backup:/backup
+    command: >-
+      sh -c "
+        rm -rf /upload_data/* /upload_data/..?* /upload_data/.[!.]*;
+        rm -rf /fhost_db_data/* /fhost_db_data/..?* /fhost_db_data/.[!.]*
+        tar -xzf /backup/upload_data_$${TARGET}.tar.gz -C /upload_data;
+        tar -xzf /backup/fhost_db_data_$${TARGET}.tar.gz -C /fhost_db_data;
+        "
