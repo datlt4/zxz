@@ -1,12 +1,12 @@
 The First Pointer
 =================
 
-<details>
-  <summary>Click to expand</summary>
-
 This is a no-bullshit file hosting service that also runs
 # `0x1a.ro <https://0x1a.ro>`_, which was forked from the wonderful `0x0.st <https://0x0.st>`
 `0x0.dat <192.168.120.103:8000>`_ which was merged `0x1a.ro <https://0x1a.ro>` and the wonderful `0x0.st <https://0x0.st>`
+
+<details>
+  <summary>Click to expand</summary>
 
 Configuration
 -------------
