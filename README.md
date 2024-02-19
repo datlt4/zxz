@@ -1,6 +1,9 @@
 The First Pointer
 =================
 
+<details>
+  <summary>Click to expand</summary>
+
 This is a no-bullshit file hosting service that also runs
 # `0x1a.ro <https://0x1a.ro>`_, which was forked from the wonderful `0x0.st <https://0x0.st>`
 `0x0.dat <192.168.120.103:8000>`_ which was merged `0x1a.ro <https://0x1a.ro>` and the wonderful `0x0.st <https://0x0.st>`
@@ -146,3 +149,130 @@ For instance, if you are using the excellent `FireHOL <https://firehol.org/>`_,
 it’s very easy to create a group on your system and use it as a condition
 in your firewall rules. You would then run the application server under that
 group.
+
+</details>
+
+# My Tutorials
+
+## Install in native environment
+
+1. Create new config gile
+
+  - Copy `instance/config.example.py` and place in `instance` with new name `config.py`
+
+     ```bash
+     cp instance/config.example.py instance/config.py
+     ```
+
+  - Config sqlite database's absolute path.
+
+     ```bash
+     SQLALCHEMY_DATABASE_URI = 'sqlite:////home/emoi/Downloads/Miscellaneous/zxz/fhost_db.sql/fhost.db'
+     ```
+
+  - Config maximum size of upload files
+
+     ```bash
+     MAX_CONTENT_LENGTH = 512 * 1024 * 1024
+     ```
+
+  - Update maximum and minimum expiration time
+
+     ```bash
+     FHOST_MIN_EXPIRATION = 14  * 24 * 60 * 60 * 1000
+     FHOST_MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000
+     ```
+
+  - Config storage path
+
+     ```bash
+     FHOST_STORAGE_PATH = "/home/emoi/Downloads/Miscellaneous/zxz/uploads"
+     ```
+
+  - Config preview protocol
+
+     ```bash
+     MOD_PREVIEW_PROTO = "sixel"
+     ```
+
+  - Config server name
+
+     ```
+     SERVER_NAME = "127.0.0.1:5000"
+     ```
+
+  - All commands
+
+     ```bash
+     cp instance/config.example.py instance/config.py
+     mkdir -p fhost_db.sql uploads
+     sed -i "s|^SQLALCHEMY_DATABASE_URI = .*|SQLALCHEMY_DATABASE_URI = \'sqlite:\/\/\/`pwd`\/fhost_db.sql\/fhost.db\'|" "instance/config.py"
+     sed -i "s|^MAX_CONTENT_LENGTH = .*|MAX_CONTENT_LENGTH = 512 \* 1024 \* 1024|" "instance/config.py"
+     sed -i "s|^FHOST_MIN_EXPIRATION = .*|FHOST_MIN_EXPIRATION = 14  \* 24 \* 60 \* 60 \* 1000|" "instance/config.py"
+     sed -i "s|^FHOST_MAX_EXPIRATION = .*|FHOST_MAX_EXPIRATION = 365 \* 24 \* 60 \* 60 \* 1000|" "instance/config.py"
+     sed -i "s|^FHOST_STORAGE_PATH = .*|FHOST_STORAGE_PATH = \"`pwd`\/uploads\"|" "instance/config.py"
+     sed -i "s|.*MOD_PREVIEW_PROTO = .*|MOD_PREVIEW_PROTO = \"sixel\"|" "instance/config.py"
+     # sed -i "s|.*SERVER_NAME = .*|SERVER_NAME = \"127.0.0.1:5000\"|" "instance/config.py"
+     ```
+
+2. Install all dependencies
+
+  - Install ubuntu packages
+
+     ```bash
+     sudo apt update
+     sudo apt install -y libmagic-dev
+     sudo apt clean
+     ```
+    
+  - Install python dependencies
+
+     ```bash
+     python3 -m pip install -r requirements.txt
+     ```
+
+3. Start service
+
+  - Run
+
+     ```bash
+     export FLASK_APP=fhost
+     export FLASK_ENV=production
+     flask db upgrade
+     flask run -h 0.0.0.0
+
+     # flask run -h 0.0.0.0 [-p 8003] [--debug] [--cert=adhoc]
+     ```
+
+## Install in docker
+
+1. Start service
+
+```bash
+bash ./zxz_tools.sh
+```
+
+2. Rebuild service
+
+```bash
+bash ./zxz_tools.sh --build
+```
+
+3. Restart service
+
+```bash
+bash ./zxz_tools.sh --restart
+```
+
+4. Backup
+
+```bash
+bash ./zxz_tools.sh -b
+```
+
+5. Restore
+
+```bash
+bash ./zxz_tools.sh -r
+bash ./zxz_tools.sh -r <backup_id>
+```
