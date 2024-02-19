@@ -88,11 +88,11 @@
                 <div class="mb-3">
                     <input type="checkbox" id="enableSecret" onchange="toggleSecret()">
                     <label for="secret" class="form-label">Secret</label>
-                    <input type="hidden" class="form-control" id="secret" name="secret" disabled>
+                    <input type="text" class="form-control" id="secret" name="secret" disabled>
                 </div>
                 <div class="mb-3">
                     <input type="checkbox" id="enableExpiration" onchange="toggleExpiration()">
-                    <label for="datetimepicker" class="form-label">Select Date and Time</label>
+                    <label for="datetimepicker" class="form-label">Select Expiration Date and Time</label>
                     <input type="datetime-local" class="form-control" id="datetimepicker" name="datetimepicker" disabled>
                     <input type="hidden" class="form-control" id="expires" name="expires" disabled>
                 </div>
@@ -148,7 +148,10 @@
 <!-- Bootstrap Chart JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
 <!-- Bootstrap Datepicker JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/default-passive-events"></script>
 
 <script>
     // Function to convert date to timestamp in milliseconds
@@ -322,7 +325,7 @@
     function addCopyButton(text, responseElement) {
         var button = document.createElement("button");
         button.className = "btn btn-success ms-2";
-        //button.id = 
+        button.id = "copyBtn_" + responseElement;
         button.textContent = 'Copy';
         button.onclick = function () {copyToClipboard(text);};
         var responseDiv = document.getElementById(responseElement);

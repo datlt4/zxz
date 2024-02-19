@@ -213,7 +213,7 @@ class File(db.Model):
     Any value greater that the longest allowed file lifespan will be rounded down to that
     value.
     """
-    def store(file_, requested_expiration: typing.Optional[int], addr, ua, secret: bool):
+    def store(file_, requested_expiration: typing.Optional[int], addr, ua, secret: str):
         data = file_.read()
         digest = sha256(data).hexdigest()
 
@@ -286,8 +286,8 @@ class File(db.Model):
 
         if isnew:
             f.secret = None
-            if secret:
-                f.secret = secrets.token_urlsafe(app.config["FHOST_SECRET_BYTES"])
+            if secret is not None:
+                f.secret = secrets.token_urlsafe(app.config["FHOST_SECRET_BYTES"]) if (secret == "") else secret
 
         storage = Path(app.config["FHOST_STORAGE_PATH"])
         storage.mkdir(parents=True, exist_ok=True)
@@ -370,7 +370,7 @@ requested_expiration can be:
 Any value greater that the longest allowed file lifespan will be rounded down to that
 value.
 """
-def store_file(f, requested_expiration:  typing.Optional[int], addr, ua, secret: bool):
+def store_file(f, requested_expiration:  typing.Optional[int], addr, ua, secret: str):
     if in_upload_bl(addr):
         return "Your host is blocked from uploading files.\n", 451
 
@@ -384,7 +384,7 @@ def store_file(f, requested_expiration:  typing.Optional[int], addr, ua, secret:
 
     return response
 
-def store_url(url, addr, ua, secret: bool):
+def store_url(url, addr, ua, secret: str):
     if is_fhost_url(url):
         abort(400)
 
@@ -491,36 +491,25 @@ def get(path, secret=None):
 def fhost():
     if request.method == "POST":
         sf = None
-        secret = "secret" in request.form
-
         if "file" in request.files:
             try:
                 # Store the file with the requested expiration date
                 return store_file(
                     request.files["file"],
-                    int(request.form["expires"]),
+                    int(request.form["expires"]) if ("expires" in request.form) else None,
                     request.remote_addr,
                     request.user_agent.string,
-                    secret
+                    request.form["secret"] if (("secret" in request.form)) else None
                 )
             except ValueError:
                 # The requested expiration date wasn't properly formed
                 abort(400)
-            except KeyError:
-                # No expiration date was requested, store with the max lifespan
-                return store_file(
-                    request.files["file"],
-                    None,
-                    request.remote_addr,
-                    request.user_agent.string,
-                    secret
-                )
         elif "url" in request.form:
             return store_url(
                 request.form["url"],
                 request.remote_addr,
                 request.user_agent.string,
-                secret
+                request.form["secret"] if (("secret" in request.form)) else None
             )
         elif "shorten" in request.form:
             return shorten(request.form["shorten"])
