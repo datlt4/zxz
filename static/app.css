@@ -82,7 +82,7 @@ li:before {
     padding-left: 3em;
 }
 
-#responseCode {
+.response-code {
     background-color: transparent;
     font-size: large;
     /* color: #dc3545; */
