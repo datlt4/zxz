@@ -257,7 +257,7 @@ class NullptrMod(Screen):
             ("Secret:", f.secret),
             ("Is NSFW:", ("Yes" if f.is_nsfw else "No") + (f" (Score: {f.nsfw_score:0.4f})" if f.nsfw_score else " (Not scanned)")),
             ("Is banned:", "Yes" if f.removed else "No"),
-            ("Expires:", time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(File.get_expiration(f.expiration, f.size)/1000)))
+            ("Expires:", time.strftime("%Y-%m-%d %H:%M:%S (GMT)", time.gmtime(File.get_expiration(f.expiration, f.size)/1000)))
         ])
 
         self.mpvw.stop_mpv(True)

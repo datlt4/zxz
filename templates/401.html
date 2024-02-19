@@ -1,2 +1,16 @@
-rm: cannot remove '{{ request.path.split("/")[1] }}': Permission denied
+{% extends "layout.html" %}
 
+{% block title %}401 Unauthorized{% endblock %}
+
+{% block content %}
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">401 Unauthorized</h4>
+                <pre class="card-text">
+rm: cannot remove '{{ request.path.split("/")[1] }}': Permission denied
+                </pre>
+            </div>
+        </div>
+    </div>
+{% endblock %}

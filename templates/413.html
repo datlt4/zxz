@@ -1,1 +1,17 @@
+{% extends "layout.html" %}
+
+{% block title %}413 Payload Too Large{% endblock %}
+
+{% block content %}
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">413 Payload Too Large</h4>
+                <pre class="card-text">
 Remote file too large ({{ request.headers["content-length"]|filesizeformat(True) }} > {{ config["MAX_CONTENT_LENGTH"]|filesizeformat(True) }}).
+                </pre>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+    

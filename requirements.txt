@@ -23,3 +23,6 @@ python-mpv
 
 # dev
 pytest
+
+# SSL cerificate
+pyopenssl

@@ -1,0 +1,92 @@
+/* Custom Styles */
+.header {
+    background-color: #343a40; /* Dark color similar to the header */
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.footer {
+    background-color: #343a40; /* Dark color similar to the header */
+    padding: 20px 0;
+    text-align: center;
+    color: #fff; /* White text color */
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.footer p {
+    margin-bottom: 5px; /* Add some spacing between paragraphs */
+}
+
+/* Ensure content is pushed down when header and footer are fixed */
+body {
+    padding-top: 56px; /* Height of the fixed header */
+    padding-bottom: 60px; /* Height of the fixed footer */
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+}
+
+/* Add some margin to the bottom of the body content */
+.content {
+    margin-bottom: 70px; /* Height of the footer */
+    
+}
+
+/* Add some spacing to top of content to account for fixed header */
+.content {
+    padding-top: 80px; /* Height of the fixed header + some extra spacing */
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h2 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+code {
+    background-color: #cdcdcd;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-family: Consolas, monospace;
+}
+pre {
+    background-color: #cdcdcd;
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
+ul {
+    list-style-type: none;
+    /* padding-left: 0; */
+    margin-left: 0;
+}
+li:before {
+    content: "•";
+    color: #007bff;
+    font-weight: bold;
+    display: inline-block;
+    width: 1em;
+    margin-left: -1em;
+}
+
+.indented-content {
+    padding-left: 3em;
+}
+
+#responseCode {
+    background-color: transparent;
+    font-size: large;
+    /* color: #dc3545; */
+    padding: 10px;
+    border-radius: 5px;
+    overflow-x: auto;
+}
