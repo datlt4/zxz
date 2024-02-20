@@ -5,7 +5,7 @@
 {% block content %}
 {% set fhost_url = url_for("fhost", _external=True).rstrip("/") %}
 <div class="col-md-12 mb-4">
-    <h2>THE FIRST REGISTER</h2>
+    <h2 id="the-null-pointer">THE NULL POINTER</h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <ul>
@@ -53,7 +53,7 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2>TERMS OF SERVICE</h2>
+    <h2 id="terms-of-service">TERMS OF SERVICE</h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <ul>
@@ -77,7 +77,7 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2>WEB UPLOAD</h2>
+    <h2 id="web-upload">WEB UPLOAD</h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <form id="fileUploadForm" enctype="multipart/form-data">
@@ -96,14 +96,30 @@
                     <input type="datetime-local" class="form-control" id="datetimepicker" name="datetimepicker" disabled>
                     <input type="hidden" class="form-control" id="expires" name="expires" disabled>
                 </div>
-                <button type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+                <div class="mb-3 d-flex align-items-center">
+                    <button id="submit-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitForm()">Submit</button>
+                    <div id="spinner-submit" class="spinner-border" role="status" style="display: none;"></div>
+                </div>
             </form>
             <div id="response" class="mt-3" style="display: none;"></div>
+            <div class="modal fade" id="qrCodeModal-response" tabindex="-1" aria-labelledby="qrCodeModalLabel-response" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="qrCodeModalLabel-response">Scan QR code</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body d-flex justify-content-center align-items-center">
+                            <div id="qrCodeContainer-response"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2>SHORTEN URL</h2>
+    <h2 id="shorten-url">SHORTEN URL</h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <form id="shortenUrlForm" enctype="multipart/form-data">
@@ -111,14 +127,30 @@
                     <label for="shorten" class="form-label">URL</label>
                     <input type="text" class="form-control" id="shorten" name="shorten">
                 </div>
-                <button type="button" class="btn btn-primary" onclick="submitShortenUrl()">Submit</button>
+                <div class="mb-3 d-flex align-items-center">
+                    <button id="submit-shorten-url-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitShortenUrl()">Submit</button>
+                    <div id="spinner-submit-shorten-url" class="spinner-border" role="status" style="display: none;"></div>
+                </div>
             </form>
-            <div id="responseShortenUrl" class="mt-3" style="display: none;"></div>
+            <div id="responseShortenUrl" class="mt-3" style="display: none; position: relative;"></div>
+            <div class="modal fade" id="qrCodeModal-responseShortenUrl" tabindex="-1" aria-labelledby="qrCodeModalLabel-responseShortenUrl" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="qrCodeModalLabel-responseShortenUrl">Scan QR code</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body d-flex justify-content-center align-items-center">
+                            <div id="qrCodeContainer-responseShortenUrl"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2>OPERATOR NOTES</h2>
+    <h2 id="operator-notes">OPERATOR NOTES</h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <p>If you run a server and like this site, clone it! Centralization is bad.</p>
@@ -136,7 +168,7 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2>FILE RETENTION PERIOD</h2>
+    <h2 id="file-retention-period">FILE RETENTION PERIOD</h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <p><code>retention = min_age + (-max_age + min_age) * pow((file_size / max_size - 1), 3)</code></p>
@@ -145,6 +177,9 @@
         </div>
     </div>
 </div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js"></script>
 <!-- Bootstrap Chart JS -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0"></script>
 <!-- Bootstrap Datepicker JS -->
@@ -152,29 +187,26 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
 <script type="text/javascript" src="https://unpkg.com/default-passive-events"></script>
-
-<script>
-    // Function to convert date to timestamp in milliseconds
-    function datetimeToTimestamp(dateString) {
-        var date = new Date(dateString);
-        return date.getTime();
-    }
-
+<!-- Bootstrap QR Code generation JS -->
+<script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+<!-- Customize JS -->
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script type="text/javascript">
     var min_age = {{'{: 6}'.format(config.get("FHOST_MIN_EXPIRATION", 2592000000)/86400000)}};
     var max_age = {{'{: 6}'.format(config.get("FHOST_MAX_EXPIRATION", 2592000000)/86400000)}};
     var max_size = {{'{: 6}'.format(config["MAX_CONTENT_LENGTH"] / 1024 / 1024)}};
-
+    
     function calculate_retention(file_size, min_age, max_age, max_size) {
         return min_age + (-max_age + min_age) * Math.pow((file_size / max_size - 1), 3);
     }
-
+    
     var data_x = [];
     var data_y = [];
     for (let i = 0; i <= 512; i += 1) {
         data_x.push(i);
         data_y.push(calculate_retention(i, min_age, max_age, max_size));
     }
-
+    
     var retentionChart = new Chart(document.getElementById('retentionChart'), {
         type: 'line',
         data: {
@@ -207,141 +239,5 @@
             }
         }
     });
-
-    function toggleSecret() {
-        var secretInput = document.getElementById("secret");
-        var enableSecretCheckbox = document.getElementById("enableSecret");
-        secretInput.disabled = !enableSecretCheckbox.checked;
-    }
-
-    function toggleExpiration() {
-        var expiresInput = document.getElementById('expires');
-        var datetimeInput = document.getElementById('datetimepicker');
-        var enableExpirationCheckbox = document.getElementById("enableExpiration");
-        expiresInput.disabled = !enableExpirationCheckbox.checked;
-        datetimeInput.disabled = !enableExpirationCheckbox.checked;
-    }
-
-    function submitForm() {
-        clearResponseText('response');
-        var fileInput = document.getElementById("file");
-        var file = fileInput.files[0];
-        var secretInput = document.getElementById("secret");
-        var secret = secretInput.value;
-
-        var expiresInput = document.getElementById('expires');
-        var datetimeInput = document.getElementById('datetimepicker');
-        var selectedDatetime = datetimeInput.value;
-        var timestamp = datetimeToTimestamp(selectedDatetime);
-        expiresInput.value = timestamp;
-
-        var form = document.getElementById("fileUploadForm");
-        var formData = new FormData(form);
-      
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/");
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    showResponse(xhr.responseText.trim(), xhr.status, 'response');
-                } else if (xhr.status === 400) {
-                    showResponse("400 Bad request", xhr.status, 'response');
-                } else if (xhr.status === 401) {
-                    showResponse("401 Unauthorized", xhr.status, 'response');
-                } else if (xhr.status === 404) {
-                    showResponse("404 Not Found", xhr.status, 'response');
-                } else if (xhr.status === 411) {
-                    showResponse("411 Length Required", xhr.status, 'response');
-                } else if (xhr.status === 413) {
-                    showResponse("413 Payload Too Large", xhr.status, 'response');
-                } else if (xhr.status === 451) {
-                    showResponse("451 Unavailable For Legal Reasons", xhr.status, 'response');
-                } else {
-                    showResponse("ERROR " + xhr.status, xhr.status, 'response');
-                }
-            }
-        };
-        xhr.send(formData);
-    }
-    
-    function submitShortenUrl() {
-        clearResponseText('responseShortenUrl');
-        var form = document.getElementById("shortenUrlForm");
-        var formData = new FormData(form);
-
-        var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/");
-        xhr.onreadystatechange = function() {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status === 200) {
-                    showResponse(xhr.responseText.trim(), xhr.status, 'responseShortenUrl');
-                } else if (xhr.status === 400) {
-                    showResponse("400 Bad request", xhr.status, 'responseShortenUrl');
-                } else if (xhr.status === 401) {
-                    showResponse("401 Unauthorized", xhr.status, 'responseShortenUrl');
-                } else if (xhr.status === 404) {
-                    showResponse("404 Not Found", xhr.status, 'responseShortenUrl');
-                } else if (xhr.status === 411) {
-                    showResponse("411 Length Required", xhr.status, 'responseShortenUrl');
-                } else if (xhr.status === 413) {
-                    showResponse("413 Payload Too Large", xhr.status, 'responseShortenUrl');
-                } else if (xhr.status === 451) {
-                    showResponse("451 Unavailable For Legal Reasons", xhr.status, 'responseShortenUrl');
-                } else {
-                    showResponse("ERROR " + xhr.status, xhr.status, 'responseShortenUrl');
-                }
-            }
-        };
-        xhr.send(formData);
-    }
-
-    function clearResponseText(responseElement) {
-        var responseDiv = document.getElementById(responseElement);
-        responseDiv.style.display = "none";
-        responseDiv.textContent = ""; // Clear the response text
-        responseDiv.className = "";
-    }
-    
-    function showResponse(text, statusCode, responseElement) {
-        // Request successful
-        var responseDiv = document.getElementById(responseElement);
-        responseDiv.style.display = "block";
-        var codeElement = document.createElement('code');
-        // Set its text content to the trimmed response
-        codeElement.textContent = text
-        codeElement.className = "response-code";// + responseElement;
-        responseDiv.appendChild(codeElement);
-        responseDiv.role = "alert";
-        if (statusCode === 200) {
-            responseDiv.className = "mt-3 alert alert-success";
-            codeElement.style.color = "#1c8556";
-            addCopyButton(text, responseElement);
-        } else {
-            responseDiv.className = "mt-3 alert alert-danger";
-            codeElement.style.color = "#dc3545";
-        }
-    }
-    // Function to add a copy button
-    function addCopyButton(text, responseElement) {
-        var button = document.createElement("button");
-        button.className = "btn btn-success ms-2";
-        button.id = "copyBtn_" + responseElement;
-        button.textContent = 'Copy';
-        button.onclick = function () {copyToClipboard(text);};
-        var responseDiv = document.getElementById(responseElement);
-        responseDiv.appendChild(button);
-        // Center the button horizontally
-    }
-
-    // Function to copy text to clipboard
-    function copyToClipboard(text) {
-        var textarea = document.createElement("textarea");
-        textarea.value = text;
-        document.body.appendChild(textarea);
-        textarea.select();
-        document.execCommand("copy");
-        document.body.removeChild(textarea);
-        alert("Copied to clipboard: " + text);
-    }
 </script>
 {% endblock %}

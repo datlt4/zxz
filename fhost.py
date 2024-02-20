@@ -469,7 +469,7 @@ def get(path, secret=None):
                 response.headers["Content-Length"] = f.size
                 response.headers["X-Accel-Redirect"] = "/" + str(fpath)
             else:
-                response = send_from_directory(app.config["FHOST_STORAGE_PATH"], f.sha256, mimetype = f.mime)
+                response = send_from_directory(app.config["FHOST_STORAGE_PATH"], f.sha256, mimetype = f.mime, download_name=path)
 
             response.headers["X-Expires"] = f.expiration
             return response
