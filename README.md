@@ -211,7 +211,8 @@ group.
      sed -i "s|^FHOST_MIN_EXPIRATION = .*|FHOST_MIN_EXPIRATION = 14  \* 24 \* 60 \* 60 \* 1000|" "instance/config.py"
      sed -i "s|^FHOST_MAX_EXPIRATION = .*|FHOST_MAX_EXPIRATION = 365 \* 24 \* 60 \* 60 \* 1000|" "instance/config.py"
      sed -i "s|^FHOST_STORAGE_PATH = .*|FHOST_STORAGE_PATH = \"`pwd`\/uploads\"|" "instance/config.py"
-     sed -i "s|.*MOD_PREVIEW_PROTO = .*|MOD_PREVIEW_PROTO = \"sixel\"|" "instance/config.py"
+     sed -i "s|^FHOST_USE_X_ACCEL_REDIRECT = .*|FHOST_USE_X_ACCEL_REDIRECT = False|" "instance/config.py"
+     # sed -i "s|.*MOD_PREVIEW_PROTO = .*|MOD_PREVIEW_PROTO = \"sixel\"|" "instance/config.py"
      # sed -i "s|.*SERVER_NAME = .*|SERVER_NAME = \"127.0.0.1:5000\"|" "instance/config.py"
      ```
 
@@ -239,7 +240,7 @@ group.
      export FLASK_APP=fhost
      export FLASK_ENV=production
      flask db upgrade
-     flask run -h 0.0.0.0
+     flask run -h 0.0.0.0 --debug
 
      # flask run -h 0.0.0.0 [-p 8003] [--debug] [--cert=adhoc]
      ```
