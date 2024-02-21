@@ -379,10 +379,7 @@ def store_file(f, requested_expiration:  typing.Optional[int], addr, ua, secret:
 
     response = make_response(sf.geturl())
     response.headers["X-Expires"] = sf.expiration
-
-    if isnew:
-        response.headers["X-Token"] = sf.mgmt_token
-
+    response.headers["X-Token"] = sf.mgmt_token
     return response
 
 def store_url(url, addr, ua, secret: str):

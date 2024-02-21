@@ -95,6 +95,7 @@
                 <div class="mb-3">
                     <label for="file" class="form-label">Choose File</label>
                     <input type="file" class="form-control" id="file" name="file" onchange="clearResponseText('response')">
+                    <div id="file-feedback" class="invalid-feedback">Please choose a file.</div>
                 </div>
                 <div class="mb-3">
                     <input type="checkbox" id="enableSecret" onchange="toggleSecret()">
@@ -140,6 +141,7 @@
                 <div class="mb-3">
                     <label for="shorten" class="form-label">URL</label>
                     <input type="text" class="form-control" id="shorten" name="shorten">
+                    <div id="shorten-feedback" class="invalid-feedback">Please enter an URL.</div>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
                     <button id="submit-shorten-url-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitShortenUrl()">Submit</button>
@@ -220,7 +222,6 @@
         return min_age + (-max_age + min_age) * Math.pow((file_size / max_size - 1), 3);
     }
     
-    console.log("max_size: ", max_size);
     var data_x = [];
     var data_y = [];
     for (let i = 0; i <= max_size; i += 16) {
