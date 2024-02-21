@@ -4,8 +4,13 @@
 
 {% block content %}
 {% set fhost_url = url_for("fhost", _external=True).rstrip("/") %}
+{% set min_age = '{: 6.0f}'.format(config.get("FHOST_MIN_EXPIRATION", 2592000000)/86400000) %}
+{% set max_age = '{: 6.0f}'.format(config.get("FHOST_MAX_EXPIRATION", 2592000000)/86400000) %}
 <div class="col-md-12 mb-4">
-    <h2 id="the-null-pointer">THE NULL POINTER</h2>
+    <h2 id="the-null-pointer">
+        <span>THE NULL POINTER</span>
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#the-null-pointer" style="padding-left: 0.375em;"></a>
+    </h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <ul>
@@ -21,7 +26,7 @@
                 <li>It is possible to append your own file name to the URL:</li>
                 <pre><code>{{ fhost_url }}/aaa.jpg/image.jpeg</code></pre>
             </ul>
-            <p><b>File URLs are valid for at least 30 days and up to a year (see below).</b></p>
+            <p><b>File URLs are valid for at least {{ min_age }} days and up to {{ max_age }} days (<a href="#file-retention-period">see below</a>).</b></p>
             <ul>
                 <li>Files can be set to expire sooner by adding an "expires" parameter (in hours)</li>
                 <pre><code>curl -F'file=@yourfile.png' -Fexpires=24 http://192.168.120.107:5000</code></pre>
@@ -53,7 +58,10 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2 id="terms-of-service">TERMS OF SERVICE</h2>
+    <h2 id="terms-of-service">
+        <span>TERMS OF SERVICE</span>
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#terms-of-service" style="padding-left: 0.375em;"></a>
+    </h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <ul>
@@ -77,7 +85,10 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2 id="web-upload">WEB UPLOAD</h2>
+    <h2 id="web-upload">
+        <span>WEB UPLOAD</span>
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#web-upload" style="padding-left: 0.375em;"></a>
+    </h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <form id="fileUploadForm" enctype="multipart/form-data">
@@ -119,7 +130,10 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2 id="shorten-url">SHORTEN URL</h2>
+    <h2 id="shorten-url">
+        <span>SHORTEN URL</span>
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#shorten-url" style="padding-left: 0.375em;"></a>
+    </h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <form id="shortenUrlForm" enctype="multipart/form-data">
@@ -150,7 +164,10 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2 id="operator-notes">OPERATOR NOTES</h2>
+    <h2 id="operator-notes">
+        <span>OPERATOR NOTES</span>
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#operator-notes" style="padding-left: 0.375em;"></a>
+    </h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <p>If you run a server and like this site, clone it! Centralization is bad.</p>
@@ -168,7 +185,10 @@
     </div>
 </div>
 <div class="col-md-12 mb-4">
-    <h2 id="file-retention-period">FILE RETENTION PERIOD</h2>
+    <h2 id="file-retention-period">
+        <span>FILE RETENTION PERIOD</span>
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#file-retention-period" style="padding-left: 0.375em;"></a>
+    </h2>
     <div class="row">
         <div class="col-md-12 indented-content">
             <p><code>retention = min_age + (-max_age + min_age) * pow((file_size / max_size - 1), 3)</code></p>
@@ -200,9 +220,10 @@
         return min_age + (-max_age + min_age) * Math.pow((file_size / max_size - 1), 3);
     }
     
+    console.log("max_size: ", max_size);
     var data_x = [];
     var data_y = [];
-    for (let i = 0; i <= 512; i += 1) {
+    for (let i = 0; i <= max_size; i += 16) {
         data_x.push(i);
         data_y.push(calculate_retention(i, min_age, max_age, max_size));
     }

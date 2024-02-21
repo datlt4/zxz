@@ -1,28 +1,27 @@
-click
-Flask_Migrate
-validators
-alembic
-requests
-Jinja2
-Flask
-flask_sqlalchemy
-python_magic
+click==8.1.7
+Flask_Migrate==4.0.5
+validators==0.22.0
+alembic==1.13.1
+requests==2.31.0
+Jinja2==3.1.3
+Flask==3.0.2
+flask_sqlalchemy==3.1.1
+python_magic==0.4.27
 
 # vscan
-clamd
+clamd==1.0.2
 
 # nsfw detection
-numpy
+numpy==1.26.4
 
 # mod ui
-av
-PyMuPDF
-libarchive_c
+av==11.0.0
+PyMuPDF==1.23.24
+libarchive_c==5.0
 textual==0.9.0
-python-mpv
+python-mpv==1.0.5
 
 # dev
-pytest
-
-# SSL cerificate
-pyopenssl
+pytest==8.0.1
+pyopenssl==24.0.0
+python-slugify==8.0.4

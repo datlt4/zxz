@@ -18,6 +18,30 @@ function toggleExpiration() {
     datetimeInput.disabled = !enableExpirationCheckbox.checked;
 }
 
+function checkHttpStatus(xhr, responseElementName) {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+        if (xhr.status === 200) {
+            showResponse(xhr.responseText.trim(), xhr.status, responseElementName);
+        } else if (xhr.status === 400) {
+            showResponse("400 Bad request", xhr.status, responseElementName);
+        } else if (xhr.status === 401) {
+            showResponse("401 Unauthorized", xhr.status, responseElementName);
+        } else if (xhr.status === 404) {
+            showResponse("404 Not Found", xhr.status, responseElementName);
+        } else if (xhr.status === 411) {
+            showResponse("411 Length Required", xhr.status, responseElementName);
+        } else if (xhr.status === 413) {
+            showResponse("413 Payload Too Large", xhr.status, responseElementName);
+        } else if (xhr.status === 415) {
+            showResponse("415 Unsupported Media Type", xhr.status, responseElementName);
+        } else if (xhr.status === 451) {
+            showResponse("451 Unavailable For Legal Reasons", xhr.status, responseElementName);
+        } else {
+            showResponse("ERROR CODE" + xhr.status, xhr.status, responseElementName);
+        }
+    }
+}
+
 function submitForm() {
     var spinnerElement = document.getElementById("spinner-submit");
     spinnerElement.style.display = "block";
@@ -41,25 +65,7 @@ function submitForm() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/");
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                showResponse(xhr.responseText.trim(), xhr.status, 'response');
-            } else if (xhr.status === 400) {
-                showResponse("400 Bad request", xhr.status, 'response');
-            } else if (xhr.status === 401) {
-                showResponse("401 Unauthorized", xhr.status, 'response');
-            } else if (xhr.status === 404) {
-                showResponse("404 Not Found", xhr.status, 'response');
-            } else if (xhr.status === 411) {
-                showResponse("411 Length Required", xhr.status, 'response');
-            } else if (xhr.status === 413) {
-                showResponse("413 Payload Too Large", xhr.status, 'response');
-            } else if (xhr.status === 451) {
-                showResponse("451 Unavailable For Legal Reasons", xhr.status, 'response');
-            } else {
-                showResponse("ERROR " + xhr.status, xhr.status, 'response');
-            }
-        }
+        checkHttpStatus(xhr, "response");
         spinnerElement.style.display = "none";
         submitButton.disabled = false;
     };
@@ -78,25 +84,7 @@ function submitShortenUrl() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/");
     xhr.onreadystatechange = function() {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                showResponse(xhr.responseText.trim(), xhr.status, 'responseShortenUrl');
-            } else if (xhr.status === 400) {
-                showResponse("400 Bad request", xhr.status, 'responseShortenUrl');
-            } else if (xhr.status === 401) {
-                showResponse("401 Unauthorized", xhr.status, 'responseShortenUrl');
-            } else if (xhr.status === 404) {
-                showResponse("404 Not Found", xhr.status, 'responseShortenUrl');
-            } else if (xhr.status === 411) {
-                showResponse("411 Length Required", xhr.status, 'responseShortenUrl');
-            } else if (xhr.status === 413) {
-                showResponse("413 Payload Too Large", xhr.status, 'responseShortenUrl');
-            } else if (xhr.status === 451) {
-                showResponse("451 Unavailable For Legal Reasons", xhr.status, 'responseShortenUrl');
-            } else {
-                showResponse("ERROR " + xhr.status, xhr.status, 'responseShortenUrl');
-            }
-        }
+        checkHttpStatus(xhr, "responseShortenUrl");
         spinnerElement.style.display = "none";
         submitButton.disabled = false;
     };

@@ -38,6 +38,7 @@ import requests
 import secrets
 from validators import url as url_valid
 from pathlib import Path
+from slugify import slugify
 
 app = Flask(__name__, instance_relative_config=True)
 app.config.update(
@@ -499,7 +500,7 @@ def fhost():
                     int(request.form["expires"]) if ("expires" in request.form) else None,
                     request.remote_addr,
                     request.user_agent.string,
-                    request.form["secret"] if (("secret" in request.form)) else None
+                    slugify(request.form["secret"]) if (("secret" in request.form)) else None
                 )
             except ValueError:
                 # The requested expiration date wasn't properly formed
@@ -509,7 +510,7 @@ def fhost():
                 request.form["url"],
                 request.remote_addr,
                 request.user_agent.string,
-                request.form["secret"] if (("secret" in request.form)) else None
+                slugify(request.form["secret"]) if (("secret" in request.form)) else None
             )
         elif "shorten" in request.form:
             return shorten(request.form["shorten"])
