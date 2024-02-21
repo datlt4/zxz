@@ -40,6 +40,18 @@ body {
     min-height: 100vh; /* Ensure the body takes up at least the full viewport height */
 }
 
+input {
+    border-color: #d2d3d5 !important;
+}
+
+input:disabled {
+    background-color: #f8f9fa !important;
+}
+
+.input-group-text {
+    border-color: #d2d3d5 !important;
+}
+
 /* Add some margin to the bottom of the body content */
 .content {
     margin-bottom: 70px; /* Height of the footer */

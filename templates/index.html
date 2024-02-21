@@ -98,14 +98,23 @@
                     <div id="file-feedback" class="invalid-feedback">Please choose a file.</div>
                 </div>
                 <div class="mb-3">
-                    <input type="checkbox" id="enableSecret" onchange="toggleSecret()">
+                    <!--<input type="checkbox" id="enableSecret" onchange="toggleSecret()">-->
                     <label for="secret" class="form-label">Secret</label>
-                    <input type="text" class="form-control" id="secret" name="secret" disabled>
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0" type="checkbox" id="enableSecret" onchange="toggleSecret()">
+                        </div>
+                        <input type="text" class="form-control" id="secret" name="secret" disabled>
+                    </div>
                 </div>
                 <div class="mb-3">
-                    <input type="checkbox" id="enableExpiration" onchange="toggleExpiration()">
-                    <label for="datetimepicker" class="form-label">Select Expiration Date and Time</label>
-                    <input type="datetime-local" class="form-control" id="datetimepicker" name="datetimepicker" disabled>
+                    <label for="datetimepicker" class="form-label">Expiration Date and Time</label>
+                    <div class="input-group">
+                        <div class="input-group-text">
+                            <input class="form-check-input mt-0" type="checkbox" id="enableExpiration" onchange="toggleExpiration()">
+                        </div>
+                        <input type="datetime-local" class="form-control" id="datetimepicker" name="datetimepicker" disabled>
+                    </div>
                     <input type="hidden" class="form-control" id="expires" name="expires" disabled>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
