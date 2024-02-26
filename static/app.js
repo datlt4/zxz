@@ -1,16 +1,98 @@
+let checkmarkTimerMaxTime = Date.now();
+let checkmarkCompleteTimer; // Define a global variable to hold the timer ID
+let checkmarkSuccessTimer;
+let hideCheckmarkTimer;
+var editor;
+
+$(document).ready(function () {
+    editor = CodeMirror.fromTextArea(document.getElementById('text-editor'), {
+       lineNumbers: true,
+       mode: 'text',
+       lineWrapping: true,
+       indentUnit: 4,
+       matchBrackets: true
+    });
+});
+
 document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("file").addEventListener("change", function(event) {
         // var selectedFile = event.target.files[0];
-        validateFileSelection();
+        if (validateFileSelection()) {
+            clearResponseDiv("response");
+        }
     });
 
     document.getElementById("shorten").addEventListener("change", function(event) {
         // var shortenUrl = event.target.value;
-        validateShortenUrlInput()
+        if (validateShortenUrlInput()) {
+            clearResponseDiv("response-shorten-url");
+        }
+    });
+
+    window.addEventListener("paste", event => {
+        if (event.target.tagName.toLowerCase() === 'input' || event.target.tagName.toLowerCase() === 'textarea' ) {
+            return;
+        }
+        checkmarkTimerMaxTime = Date.now();
+        clearTimeout(checkmarkCompleteTimer);
+        clearTimeout(checkmarkSuccessTimer);
+        clearTimeout(hideCheckmarkTimer);
+        $("#check-pasting").attr("class", "check");
+        $("#fill-pasting").attr("class", "fill");
+        $("#path-pasting").attr("class", "path");
+        var checkmarkElement = document.getElementById("checkmark-pasting");
+        checkmarkElement.classList.remove("hide");
+        checkmarkElement.classList.add("show");
+
+        try {
+            var webUploadSection = document.getElementById("web-upload");
+            window.scrollTo({ top: webUploadSection.offsetTop, behavior: "smooth" /* Smooth scroll behavior */ });
+            var fileInput = document.getElementById("file");
+            // fileInput.files = event.clipboardData.files;
+            // Check if the clipboard data contains files (images)
+            if (event.clipboardData.files.length > 0) {
+                fileInput.files = event.clipboardData.files;
+            } else {
+                // If no files are pasted, assume it's text and set the value of the file input
+                // Note: This won't actually upload the text as a file, but it will set the value of the file input
+                // You may need additional logic to handle text data differently, such as creating a Blob and assigning it to the file input
+                var pastedText = event.clipboardData.getData("text/plain");
+                if (pastedText !== "" && pastedText !== null) {
+                    // If it's text, create a Blob containing the text
+                    var blob = new Blob([pastedText], { type: "text/plain" });
+                    // Create a new DataTransfer object
+                    var dataTransfer = new DataTransfer();
+                    // Add the blob as a file to the DataTransfer object
+                    var file = new File([blob], "plaintext.txt", { type: "text/plain" });
+                    dataTransfer.items.add(file);
+                    // Assign the DataTransfer object to the files property
+                    fileInput.files = dataTransfer.files;
+                }
+            }
+            if (validateFileSelection()) {
+                clearResponseDiv("response");
+                checkmarkCompleteTimer = setTimeout(function (timestamp) {
+                    $("#check-pasting").attr("class", "check check-complete");
+                    $("#fill-pasting").attr("class", "fill fill-complete");
+                }, 200, checkmarkTimerMaxTime);
+                checkmarkSuccessTimer = setTimeout(function (timestamp) {
+                    $("#check-pasting").attr("class", "check check-complete success");
+                    $("#fill-pasting").attr("class", "fill fill-complete success");
+                    $("#path-pasting").attr("class", "path path-complete");
+                }, 500, checkmarkTimerMaxTime);
+                hideCheckmarkTimer = setTimeout(function (timestamp) {
+                    checkmarkElement.classList.remove("show");
+                    checkmarkElement.classList.add("hide");
+                }, 3500, checkmarkTimerMaxTime);
+            }
+        } catch (error) {
+            checkmarkElement.classList.remove("show");
+            checkmarkElement.classList.add("hide");
+        }
     });
 
     $('[data-toggle="tooltip"]').tooltip();
-    // Update the tooltip every second
+    // Update the tooltip every minute
     setInterval(function () {
         var codeElement = document.getElementById("response-code-response"); // "response-code-" + responseDivId;
         if (codeElement!==null) {
@@ -19,7 +101,31 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     }, 5000);
+
+    document.querySelector('a[href="#the-null-pointer"]').addEventListener("click", scrollIntoView);
+    document.querySelector('a[href="#terms-of-service"]').addEventListener("click", scrollIntoView);
+    document.querySelector('a[href="#web-upload"]').addEventListener("click", scrollIntoView);
+    document.querySelector('a[href="#shorten-url"]').addEventListener("click", scrollIntoView);
+    document.querySelector('a[href="#text-editor-sect"]').addEventListener("click", scrollIntoView);
+    document.querySelector('a[href="#operator-notes"]').addEventListener("click", scrollIntoView);
+    document.querySelector('a[href="#file-retention-period"]').addEventListener("click", scrollIntoView);
 });
+
+function scrollIntoView(event) {
+    event.preventDefault(); // Prevent default anchor behavior
+    // Get the target element by ID
+    var targetId = event.currentTarget.getAttribute("href").substring(1);
+    var targetSection = document.getElementById(targetId);
+    if (targetSection) {
+        // Calculate the offset position of the target element from the top of the page
+        var offsetPosition = targetSection.offsetTop - ((targetId==="the-null-pointer") ? 60 : 0);
+        // Scroll to the target element with the offset position
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth" // Smooth scroll behavior
+        });
+    }
+}
 
 // Function to convert date to timestamp in milliseconds
 function datetimeToTimestamp(dateString) {
@@ -48,24 +154,40 @@ function validateFileSelection() {
     // Check if file is selected
     if (fileInput.files.length === 0) {
         fileInput.classList.add("is-invalid"); // Apply 'is-invalid' class
+        fileInput.style.borderColor = "#dc3545";
         fileFeedback.style.display = "block"; // Show the feedback message
         return false;
     } else {
         fileInput.classList.remove("is-invalid"); // Remove 'is-invalid' class
+        fileInput.style.borderColor = "#d2d3d5";
         fileFeedback.style.display = "none"; // Hide the feedback message
         return true;
     }
 }
 
+let submitTimerMaxTime = Date.now();
+let checkmarkSubmitCompleteTimer; // Define a global variable to hold the timer ID
+let checkmarkSubmitSuccessTimer;
+let hideCheckmarkSubmitTimer;
+
 function submitForm() {
     if (!validateFileSelection()) {
         return;
     }
-    var spinnerElement = document.getElementById("spinner-submit");
-    spinnerElement.style.display = "block";
+    submitTimerMaxTime = Date.now();
+    clearTimeout(hideCheckmarkSubmitTimer);
+    clearTimeout(checkmarkSubmitSuccessTimer);
+    clearTimeout(checkmarkSubmitCompleteTimer);
+    $("#check-submit").attr("class", "check");
+    $("#fill-submit").attr("class", "fill");
+    $("#path-submit").attr("class", "path");
+    var checkmarkSubmitElement = document.getElementById("checkmark-submit");
+    checkmarkSubmitElement.classList.remove("hide");
+    checkmarkSubmitElement.classList.add("show");
+
     var submitButton = document.getElementById("submit-btn");
     submitButton.disabled = true;
-    clearResponseText('response');
+    clearResponseDiv('response');
 
     var expiresInput = document.getElementById('expires');
     var datetimeInput = document.getElementById('datetimepicker');
@@ -77,10 +199,31 @@ function submitForm() {
     var formData = new FormData(form);
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/");
+    xhr.open("POST", "/", true);
     xhr.onreadystatechange = function() {
-        checkHttpStatus(xhr, "response");
-        spinnerElement.style.display = "none";
+        var httpStatus = checkHttpStatus(xhr, "response")
+        checkmarkSubmitCompleteTimer = setTimeout(function (timestamp, httpStatus) {
+            if ((timestamp < submitTimerMaxTime) || !httpStatus) {
+                return;
+            }
+            $("#check-submit").attr("class", "check check-complete");
+            $("#fill-submit").attr("class", "fill fill-complete");
+        }, 100, Date.now(), httpStatus);
+        checkmarkSubmitSuccessTimer = setTimeout(function (timestamp,httpStatus) {
+            if ((timestamp < submitTimerMaxTime) || !httpStatus) {
+                return;
+            }
+            $("#check-submit").attr("class", "check check-complete success");
+            $("#fill-submit").attr("class", "fill fill-complete success");
+            $("#path-submit").attr("class", "path path-complete");
+        }, 300, Date.now(), httpStatus);
+        hideCheckmarkSubmitTimer = setTimeout(function (timestamp,httpStatus) {
+            if ((timestamp < submitTimerMaxTime) || !httpStatus) {
+                return;
+            }
+            checkmarkSubmitElement.classList.remove("show");
+            checkmarkSubmitElement.classList.add("hide");
+        }, 3500, Date.now(), httpStatus);
         submitButton.disabled = false;
     };
     xhr.send(formData);
@@ -92,50 +235,246 @@ function validateShortenUrlInput() {
 
     if (shortenUrlInput.value.trim() === "") {
         shortenUrlInput.classList.add("is-invalid"); // Apply 'is-invalid' class
+        shortenUrlInput.style.borderColor = "#dc3545";
         feedbackElement.style.display = "block";
         return false;
     } else {
         shortenUrlInput.classList.remove("is-invalid"); // Remove 'is-invalid' class
+        shortenUrlInput.style.borderColor = "#d2d3d5";
         feedbackElement.style.display = "none";
         return true;
     }
 }
 
+let submitShortenUrlTimerMaxTime = Date.now();
+let checkmarkSubmitShortenUrlCompleteTimer; // Define a global variable to hold the timer ID
+let checkmarkSubmitShortenUrlSuccessTimer;
+let hideCheckmarkSubmitShortenUrlTimer;
+
 function submitShortenUrl() {
     if (!validateShortenUrlInput()) {
         return;
     }
-    var spinnerElement = document.getElementById("spinner-submit-shorten-url");
-    spinnerElement.style.display = "block";
+    submitShortenUrlTimerMaxTime = Date.now();
+    clearTimeout(hideCheckmarkSubmitShortenUrlTimer);
+    clearTimeout(checkmarkSubmitShortenUrlSuccessTimer);
+    clearTimeout(checkmarkSubmitShortenUrlCompleteTimer);
+    $("#check-submit-shorten-url").attr("class", "check");
+    $("#fill-submit-shorten-url").attr("class", "fill");
+    $("#path-submit-shorten-url").attr("class", "path");
+    var checkmarkElement = document.getElementById("checkmark-submit-shorten-url");
+    checkmarkElement.classList.remove("hide");
+    checkmarkElement.classList.add("show");
+
     var submitButton = document.getElementById("submit-shorten-url-btn");
     submitButton.disabled = true;
-    clearResponseText('responseShortenUrl');
+    clearResponseDiv("response-shorten-url");
     var form = document.getElementById("shortenUrlForm");
     var formData = new FormData(form);
 
     var xhr = new XMLHttpRequest();
-    xhr.open("POST", "/");
+    xhr.open("POST", "/", true);
     xhr.onreadystatechange = function() {
-        checkHttpStatus(xhr, "responseShortenUrl");
-        spinnerElement.style.display = "none";
+        var checkHttp = checkHttpStatus(xhr, "response-shorten-url");
+        checkmarkSubmitShortenUrlCompleteTimer = setTimeout(function (timestamp, checkHttp) {
+            if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
+                return;
+            }
+            $("#check-submit-shorten-url").attr("class", "check check-complete");
+            $("#fill-submit-shorten-url").attr("class", "fill fill-complete");
+        }, 100, submitShortenUrlTimerMaxTime, checkHttp);
+        checkmarkSubmitShortenUrlSuccessTimer = setTimeout(function (timestamp, checkHttp) {
+            if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
+                return;
+            }
+            $("#check-submit-shorten-url").attr("class", "check check-complete success");
+            $("#fill-submit-shorten-url").attr("class", "fill fill-complete success");
+            $("#path-submit-shorten-url").attr("class", "path path-complete");
+        }, 300, submitShortenUrlTimerMaxTime, checkHttp);
+        hideCheckmarkSubmitShortenUrlTimer = setTimeout(function (timestamp, checkHttp) {
+            if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
+                return;
+            }
+            checkmarkElement.classList.remove("show");
+            checkmarkElement.classList.add("hide");
+        }, 3500, submitShortenUrlTimerMaxTime, checkHttp);
         submitButton.disabled = false;
     };
     xhr.send(formData);
 }
 
-function clearResponseText(responseDivId) {
-    if (validateFileSelection()) {    
-        var responseDiv = document.getElementById(responseDivId);
-        responseDiv.style.display = "none";
-        responseDiv.textContent = ""; // Clear the response text
-        responseDiv.className = "";
+function validateScriptInput() {
+    var script = editor.getValue();
+    var feedbackElement = document.getElementById("script-feedback");
+    if ((script === "") || (script === null)) {
+        // feedbackElement.style.display = "block";
+        feedbackElement.classList.remove("hide");
+        feedbackElement.classList.add("show");
+        setTimeout(function () {
+            feedbackElement.classList.remove("show");
+            feedbackElement.classList.add("hide");
+        }, 3000);
+        return false;
+    } else {
+        feedbackElement.classList.remove("show");
+        feedbackElement.classList.add("hide");
+        return true;
     }
+}
+
+let submitScriptTimerMaxTime = Date.now();
+let checkmarkSubmitScriptCompleteTimer; // Define a global variable to hold the timer ID
+let checkmarkSubmitScriptSuccessTimer;
+let hideCheckmarkSubmitScriptTimer;
+
+function submitScript() {
+    if (!validateScriptInput()) {
+        return;
+    }
+    submitScriptTimerMaxTime = Date.now();
+    clearTimeout(hideCheckmarkSubmitScriptTimer);
+    clearTimeout(checkmarkSubmitScriptSuccessTimer);
+    clearTimeout(checkmarkSubmitScriptCompleteTimer);
+    $("#check-submit-script").attr("class", "check");
+    $("#fill-submit-script").attr("class", "fill");
+    $("#path-submit-script").attr("class", "path");
+    var checkmarkSubmitElement = document.getElementById("checkmark-submit-script");
+    checkmarkSubmitElement.classList.remove("hide");
+    checkmarkSubmitElement.classList.add("show");
+
+    var submitButton = document.getElementById("submit-script-btn");
+    submitButton.disabled = true;
+    clearResponseDiv("response-script");
+
+    var script = editor.getValue();
+    var fileInput = document.getElementById("file-script");
+    // If it's text, create a Blob containing the text
+    var blob = new Blob([script], { type: "text/plain" });
+    // Create a new DataTransfer object
+    var dataTransfer = new DataTransfer();
+    // Add the blob as a file to the DataTransfer object
+    var file = new File([blob], "plaintext.txt", { type: "text/plain" });
+    dataTransfer.items.add(file);
+    // Assign the DataTransfer object to the files property
+    fileInput.files = dataTransfer.files;
+
+    var form = document.getElementById("scriptForm");
+    var formData = new FormData(form);
+    formData.append("file", file);
+
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", "/", true);
+    xhr.onreadystatechange = function() {
+        var checkHttp = checkHttpStatus(xhr, "response-script")
+        checkmarkSubmitScriptCompleteTimer = setTimeout(function (timestamp, checkHttp) {
+            if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
+                return;
+            }
+            $("#check-submit-script").attr("class", "check check-complete");
+            $("#fill-submit-script").attr("class", "fill fill-complete");
+        }, 100, submitScriptTimerMaxTime, checkHttp);
+        checkmarkSubmitScriptSuccessTimer = setTimeout(function (timestamp, checkHttp) {
+            if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
+                return;
+            }
+            $("#check-submit-script").attr("class", "check check-complete success");
+            $("#fill-submit-script").attr("class", "fill fill-complete success");
+            $("#path-submit-script").attr("class", "path path-complete");
+        }, 300, submitScriptTimerMaxTime, checkHttp);
+        hideCheckmarkSubmitScriptTimer = setTimeout(function (timestamp, checkHttp) {
+            if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
+                return;
+            }
+            checkmarkSubmitElement.classList.remove("show");
+            checkmarkSubmitElement.classList.add("hide");
+        }, 3500, submitScriptTimerMaxTime, checkHttp);
+        submitButton.disabled = false;
+    };
+    xhr.send(formData);
+}
+
+let downloadFromUrlTimerMaxTime = Date.now();
+let checkmarkDownloadFromUrlCompleteTimer; // Define a global variable to hold the timer ID
+let checkmarkDownloadFromUrlSuccessTimer;
+let hideCheckmarkDownloadFromUrlTimer;
+
+function getFileFromUrl() {
+    var downloadLink = document.getElementById("download-url").value;
+    downloadLink.disabled = true;
+
+    try {
+        new URL(downloadLink);
+        downloadFromUrlTimerMaxTime = Date.now();
+        clearTimeout(checkmarkDownloadFromUrlCompleteTimer);
+        clearTimeout(checkmarkDownloadFromUrlSuccessTimer);
+        clearTimeout(hideCheckmarkDownloadFromUrlTimer);
+        $("#check-download").attr("class", "check");
+        $("#fill-download").attr("class", "fill");
+        $("#path-download").attr("class", "path");
+        var checkmarkElement = document.getElementById("checkmark-download");
+        checkmarkElement.classList.remove("hide");
+        checkmarkElement.classList.add("show");
+
+        var formData = new FormData();
+        formData.append("url", downloadLink);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/fetch-file", true);
+        xhr.onreadystatechange = function () {
+            if (xhr.status === 200) {
+                // Request was successful, handle the response
+                editor.setValue(xhr.responseText);
+                clearResponseDiv("response-script");
+                checkmarkDownloadFromUrlCompleteTimer = setTimeout(function (timestamp) {
+                    if (timestamp < downloadFromUrlTimerMaxTime) {
+                        return;
+                    }
+                    $("#check-download").attr("class", "check check-complete");
+                    $("#fill-download").attr("class", "fill fill-complete");
+                }, 100, downloadFromUrlTimerMaxTime);
+                checkmarkDownloadFromUrlSuccessTimer = setTimeout(function (timestamp) {
+                    if (timestamp < downloadFromUrlTimerMaxTime) {
+                        return;
+                    }
+                    $("#check-download").attr("class", "check check-complete success");
+                    $("#fill-download").attr("class", "fill fill-complete success");
+                    $("#path-download").attr("class", "path path-complete");
+                }, 300, downloadFromUrlTimerMaxTime);
+                hideCheckmarkDownloadFromUrlTimer = setTimeout(function (timestamp) {
+                    if (timestamp < downloadFromUrlTimerMaxTime) {
+                        return;
+                    }
+                    checkmarkElement.classList.remove("show");
+                    checkmarkElement.classList.add("hide");
+                }, 3500, downloadFromUrlTimerMaxTime);
+            } else if (xhr.readyState === 4) {
+                // Request failed
+                alert("There was a problem with the fetch operation: " + xhr.status + " - " + xhr.statusText);
+                checkmarkElement.classList.remove("show");
+                checkmarkElement.classList.add("hide");
+            }
+        };
+        
+        // Send the POST request
+        xhr.send(formData);
+    } catch (error) {
+        alert("Invalid download link", error);
+    }
+    downloadLink.disabled = false;
+}
+
+function clearResponseDiv(responseDivId) {
+    var responseDiv = document.getElementById(responseDivId);
+    responseDiv.style.display = "none";
+    responseDiv.textContent = ""; // Clear the response text
+    responseDiv.className = "";
 }
 
 function checkHttpStatus(xhr, responseDivId) {
     if (xhr.readyState === XMLHttpRequest.DONE) {
         if (xhr.status === 200) {
             showResponse(xhr.responseText.trim(), xhr.status, responseDivId, xhr);
+            return true;
         } else if (xhr.status === 400) {
             showResponse("400 Bad request", xhr.status, responseDivId, xhr);
         } else if (xhr.status === 401) {
@@ -154,6 +493,7 @@ function checkHttpStatus(xhr, responseDivId) {
             showResponse("ERROR CODE" + xhr.status, xhr.status, responseDivId, xhr);
         }
     }
+    return false;
 }
 
 function formatTimeDifference(timestamp) {
@@ -234,28 +574,23 @@ function addRemoveButton(url, responseDivId, xTokenHeader) {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            alert('Delete request successful');
             button.className = "btn btn-secondary ms-2";
             var copyButton = document.getElementById("copy-button-" + responseDivId);
-            console.log("copyButton:", copyButton);
             copyButton.className = "btn btn-secondary ms-2";
             copyButton.disabled = true;
             var urlInNewTabButton = document.getElementById("url-in-new-tab-button-" + responseDivId);
-            console.log("urlInNewTabButton:", urlInNewTabButton);
             urlInNewTabButton.className = "btn btn-secondary ms-2";
             urlInNewTabButton.disabled = true;
             var scanQrCodeButton = document.getElementById("scan-qr-code-button-" + responseDivId);
-            console.log("scanQrCodeButton:", scanQrCodeButton);
             scanQrCodeButton.className = "btn btn-secondary ms-2";
             scanQrCodeButton.disabled = true;
             var responseDiv = document.getElementById(responseDivId);
-            console.log("responseDiv:", responseDiv);
             responseDiv.className = "mt-3 alert alert-secondary d-flex justify-content-between align-items-center";
             var codeElement = document.getElementById("response-code-" + responseDivId);
-            console.log("codeElement:", codeElement);
             codeElement.style.textDecoration = "line-through";
             codeElement.style.color = "#41464b"
             codeElement.setAttribute("title", "Link is not available");
+            alert('Delete request successful');
         })
         .catch(error => {
             alert('Error during delete request: ' + error);

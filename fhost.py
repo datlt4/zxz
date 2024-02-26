@@ -19,7 +19,7 @@
     and limitations under the License.
 """
 
-from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, Response, render_template
+from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import and_, or_
@@ -39,8 +39,10 @@ import secrets
 from validators import url as url_valid
 from pathlib import Path
 from slugify import slugify
+from flask_cors import CORS
 
 app = Flask(__name__, instance_relative_config=True)
+CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     PREFERRED_URL_SCHEME = "https", # nginx users: make sure to have 'uwsgi_param UWSGI_SCHEME $scheme;' in your config
@@ -515,6 +517,23 @@ def fhost():
         abort(400)
     else:
         return render_template("index.html")
+
+@app.route('/fetch-file', methods=["POST"])
+def fetch_file():
+    if request.method == "POST":
+        url = request.form["url"]
+        if not request.url:
+            return jsonify({"error": "URL parameter is required"}), 400
+        
+        try:
+            response = requests.get(url)
+            if response.status_code != 200:
+                return "Failed to fetch file", response.status_code
+
+            # Return the file content
+            return response.text, 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
 @app.route("/robots.txt")
 def robots():

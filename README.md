@@ -240,7 +240,7 @@ group.
      export FLASK_APP=fhost
      export FLASK_ENV=production
      flask db upgrade
-     flask run -h 0.0.0.0 --debug
+     flask run -h 0.0.0.0
 
      # flask run -h 0.0.0.0 [-p 8003] [--debug] [--cert=adhoc]
      ```

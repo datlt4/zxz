@@ -6,7 +6,7 @@
 {% set fhost_url = url_for("fhost", _external=True).rstrip("/") %}
 {% set min_age = '{: 6.0f}'.format(config.get("FHOST_MIN_EXPIRATION", 2592000000)/86400000) %}
 {% set max_age = '{: 6.0f}'.format(config.get("FHOST_MAX_EXPIRATION", 2592000000)/86400000) %}
-<div class="col-md-12 mb-4">
+<div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="the-null-pointer">
         <span>THE NULL POINTER</span>
         <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#the-null-pointer" style="padding-left: 0.375em;"></a>
@@ -34,11 +34,8 @@
                 <pre><code>curl -F'file=@yourfile.png' -Fexpires=1681996320000 http://192.168.120.107:5000</code></pre>
             </ul>
 
-            <p>Expired files won't be removed immediately, but will be removed as part of the next purge.
-            <p>
-            <p>Whenever a file that does not already exist or has expired is uploaded, the HTTP response header includes
-                an X-Token field. You can use this to perform management operations on the file.
-            <p>
+            <p>Expired files won't be removed immediately, but will be removed as part of the next purge.</p>
+            <p>Whenever a file that does not already exist or has expired is uploaded, the HTTP response header includes an X-Token field. You can use this to perform management operations on the file.</p>
 
             <ul>
                 <li>To delete the file immediately:</li>
@@ -57,7 +54,7 @@
         </div>
     </div>
 </div>
-<div class="col-md-12 mb-4">
+<div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="terms-of-service">
         <span>TERMS OF SERVICE</span>
         <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#terms-of-service" style="padding-left: 0.375em;"></a>
@@ -72,19 +69,17 @@
                     <li>extremist material of any kind</li>
                     <li>malware / botnet C&C</li>
                     <li>anything related to crypto currencies</li>
-                    <li>backups (yes, this includes your minecraft stuff, seriously people have been dumping terabytes
-                        of it here for years)</li>
+                    <li>backups (yes, this includes your minecraft stuff, seriously people have been dumping terabytes of it here for years)</li>
                     <li>CI build artifacts</li>
                     <li>doxxing, database dumps containing personal information</li>
                     <li>anything illegal under Australian law</li>
                 </ul>
             </ul>
-            <p>Uploads found to be in violation of these rules will be removed, and the originating IP address blocked
-                from further uploads.</p>
+            <p>Uploads found to be in violation of these rules will be removed, and the originating IP address blocked from further uploads.</p>
         </div>
     </div>
 </div>
-<div class="col-md-12 mb-4">
+<div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="web-upload">
         <span>WEB UPLOAD</span>
         <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#web-upload" style="padding-left: 0.375em;"></a>
@@ -93,8 +88,19 @@
         <div class="col-md-12 indented-content">
             <form id="fileUploadForm" enctype="multipart/form-data">
                 <div class="mb-3">
-                    <label for="file" class="form-label">Choose File</label>
-                    <input type="file" class="form-control" id="file" name="file" onchange="clearResponseText('response')">
+                    <div class="d-flex align-items-center">
+                        <label for="file" class="form-label">Choose File</label>
+                        <div id="checkmark-pasting" class="checkmark hide">
+                            <svg version="1.1" x="0px" y="0px" width="18px" height="18px" viewBox="0, 0, 100, 100" id="checkmark-svg">
+                                <g transform="">
+                                    <circle id="path-pasting" class="path" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                    <circle id="fill-pasting" class="fill" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                    <polyline id="check-pasting" class="check" fill="none" stroke="#7DB0D5" stroke-width="14" stroke-linecap="round" stroke-miterlimit="10" points="70,35 45,65 30,52"/>
+                                </g>
+                            </svg>
+                        </div>
+                    </div>
+                    <input type="file" class="form-control" id="file" name="file">
                     <div id="file-feedback" class="invalid-feedback">Please choose a file.</div>
                 </div>
                 <div class="mb-3">
@@ -118,8 +124,16 @@
                     <input type="hidden" class="form-control" id="expires" name="expires" disabled>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
-                    <button id="submit-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitForm()">Submit</button>
-                    <div id="spinner-submit" class="spinner-border" role="status" style="display: none;"></div>
+                    <button id="submit-btn" type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+                    <div id="checkmark-submit" class="checkmark hide" style="padding-top: 3px">
+                        <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
+                            <g transform="">
+                                <circle id="path-submit" class="path" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <circle id="fill-submit" class="fill" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <polyline id="check-submit" class="check" fill="none" stroke="#7DB0D5" stroke-width="14" stroke-linecap="round" stroke-miterlimit="10" points="70,35 45,65 30,52"/>
+                            </g>
+                        </svg>
+                    </div>
                 </div>
             </form>
             <div id="response" class="mt-3" style="display: none;"></div>
@@ -139,7 +153,7 @@
         </div>
     </div>
 </div>
-<div class="col-md-12 mb-4">
+<div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="shorten-url">
         <span>SHORTEN URL</span>
         <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#shorten-url" style="padding-left: 0.375em;"></a>
@@ -154,19 +168,27 @@
                 </div>
                 <div class="mb-3 d-flex align-items-center">
                     <button id="submit-shorten-url-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitShortenUrl()">Submit</button>
-                    <div id="spinner-submit-shorten-url" class="spinner-border" role="status" style="display: none;"></div>
+                    <div id="checkmark-submit-shorten-url" class="checkmark hide" style="padding-top: 3px">
+                        <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
+                            <g transform="">
+                                <circle id="path-submit-shorten-url" class="path" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <circle id="fill-submit-shorten-url" class="fill" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <polyline id="check-submit-shorten-url" class="check" fill="none" stroke="#7DB0D5" stroke-width="14" stroke-linecap="round" stroke-miterlimit="10" points="70,35 45,65 30,52"/>
+                            </g>
+                        </svg>
+                    </div>
                 </div>
             </form>
-            <div id="responseShortenUrl" class="mt-3" style="display: none; position: relative;"></div>
-            <div class="modal fade" id="qrCodeModal-responseShortenUrl" tabindex="-1" aria-labelledby="qrCodeModalLabel-responseShortenUrl" aria-hidden="true">
+            <div id="response-shorten-url" class="mt-3" style="display: none; position: relative;"></div>
+            <div class="modal fade" id="qrCodeModal-response-shorten-url" tabindex="-1" aria-labelledby="qrCodeModalLabel-response-shorten-url" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title" id="qrCodeModalLabel-responseShortenUrl">Scan QR code</h5>
+                            <h5 class="modal-title" id="qrCodeModalLabel-response-shorten-url">Scan QR code</h5>
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body d-flex justify-content-center align-items-center">
-                            <div id="qrCodeContainer-responseShortenUrl"></div>
+                            <div id="qrCodeContainer-response-shorten-url"></div>
                         </div>
                     </div>
                 </div>
@@ -174,7 +196,68 @@
         </div>
     </div>
 </div>
-<div class="col-md-12 mb-4">
+<div class="col-md-12 mb-4 border rounded-4 p-3">
+    <h2 id="text-editor-sect">
+        <span>TEXT EDITOR</span>
+        <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#text-editor-sect" style="padding-left: 0.375em;"></a>
+    </h2>
+    <div class="row">
+        <div class="col-md-12 indented-content">
+            <div class="input-group mb-3">
+                <input type="text" id="download-url" class="form-control" placeholder="Download link" aria-label="Download link" aria-describedby="get-data-from-url">
+                <button class="btn btn-outline-primary" type="button" id="get-data-from-url" onclick="getFileFromUrl()">Download</button>
+            </div>
+            <div id="download-from-url-feedback" class="invalid-feedback">Please enter an valid URL.</div>
+            <form id="scriptForm" enctype="multipart/form-data">
+                <div class="d-flex align-items-center">
+                    <label for="text-editor" class="form-label">Text</label>
+                    <div id="checkmark-download" class="checkmark hide">
+                        <svg version="1.1" x="0px" y="0px" width="18px" height="18px" viewBox="0, 0, 100, 100" id="checkmark-svg">
+                            <g transform="">
+                                <circle id="path-download" class="path" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <circle id="fill-download" class="fill" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <polyline id="check-download" class="check" fill="none" stroke="#7DB0D5" stroke-width="14" stroke-linecap="round" stroke-miterlimit="10" points="70,35 45,65 30,52"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <!-- <textarea class="form-control numbered" id="exampleFormControlTextarea1" rows="15"></textarea> -->
+                    <textarea id="text-editor" class="code border"></textarea>
+                    <input type="hidden" class="form-control" id="file-script" name="file">
+                    <div id="script-feedback" class="invalid-feedback hide">Please enter an your script.</div>
+                </div>
+                <div class="mb-3 d-flex align-items-center">
+                    <button id="submit-script-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitScript()">Submit</button>
+                    <div id="checkmark-submit-script" class="checkmark hide" style="padding-top: 3px">
+                        <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
+                            <g transform="">
+                                <circle id="path-submit-script" class="path" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <circle id="fill-submit-script" class="fill" fill="none" stroke="#7DB0D5" stroke-width="7" stroke-miterlimit="10" cx="50" cy="50" r="44"/>
+                                <polyline id="check-submit-script" class="check" fill="none" stroke="#7DB0D5" stroke-width="14" stroke-linecap="round" stroke-miterlimit="10" points="70,35 45,65 30,52"/>
+                            </g>
+                        </svg>
+                    </div>
+                </div>
+            </form>
+            <div id="response-script" class="mt-3" style="display: none; position: relative;"></div>
+            <div class="modal fade" id="qrCodeModal-response-script" tabindex="-1" aria-labelledby="qrCodeModalLabel-response-script" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-sm">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="qrCodeModalLabel-response-script">Scan QR code</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body d-flex justify-content-center align-items-center">
+                            <div id="qrCodeContainer-response-script"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="operator-notes">
         <span>OPERATOR NOTES</span>
         <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#operator-notes" style="padding-left: 0.375em;"></a>
@@ -195,7 +278,7 @@
         </div>
     </div>
 </div>
-<div class="col-md-12 mb-4">
+<div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="file-retention-period">
         <span>FILE RETENTION PERIOD</span>
         <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#file-retention-period" style="padding-left: 0.375em;"></a>
@@ -220,6 +303,9 @@
 <script type="text/javascript" src="https://unpkg.com/default-passive-events"></script>
 <!-- Bootstrap QR Code generation JS -->
 <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+<!-- CodeMirror -->
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css"></link>
 <!-- Customize JS -->
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 <script type="text/javascript">
