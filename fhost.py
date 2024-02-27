@@ -29,6 +29,7 @@ from hashlib import sha256
 from magic import Magic
 from mimetypes import guess_extension
 import click
+import re
 import os
 import sys
 import time
@@ -522,6 +523,12 @@ def fhost():
 def fetch_file():
     if request.method == "POST":
         url = request.form["url"]
+        base_url = re.findall(r"(http[s]*://[\w.:]+)/?.*", request.url)
+
+        if len(base_url) > 0:
+            base_url = base_url[0]
+            url = url.replace(base_url, "http://localhost:5000")
+
         if not request.url:
             return jsonify({"error": "URL parameter is required"}), 400
         
