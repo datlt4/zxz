@@ -30,7 +30,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     window.addEventListener("paste", event => {
-        if (event.target.tagName.toLowerCase() === 'input' || event.target.tagName.toLowerCase() === 'textarea' ) {
+        var isTextInput = event.target.tagName.toLowerCase() === 'input' || event.target.tagName.toLowerCase() === 'textarea';
+        var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        if (isTextInput || (isMobile && !navigator.userAgent.match(/iPad|iPhone|iPod/i))) {
             return;
         }
         checkmarkTimerMaxTime = Date.now();
@@ -201,29 +203,42 @@ function submitForm() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/", true);
     xhr.onreadystatechange = function() {
-        var httpStatus = checkHttpStatus(xhr, "response")
-        checkmarkSubmitCompleteTimer = setTimeout(function (timestamp, httpStatus) {
-            if ((timestamp < submitTimerMaxTime) || !httpStatus) {
-                return;
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            var checkHttp = checkHttpStatus(xhr, "response")
+            if (checkHttp) {
+                checkmarkSubmitCompleteTimer = setTimeout(function (timestamp, checkHttp) {
+                    if ((timestamp < submitTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    $("#check-submit").attr("class", "check check-complete");
+                    $("#fill-submit").attr("class", "fill fill-complete");
+                }, 100, Date.now(), checkHttp);
+                checkmarkSubmitSuccessTimer = setTimeout(function (timestamp,checkHttp) {
+                    if ((timestamp < submitTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    $("#check-submit").attr("class", "check check-complete success");
+                    $("#fill-submit").attr("class", "fill fill-complete success");
+                    $("#path-submit").attr("class", "path path-complete");
+                }, 300, Date.now(), checkHttp);
+                hideCheckmarkSubmitTimer = setTimeout(function (timestamp,checkHttp) {
+                    if ((timestamp < submitTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    checkmarkSubmitElement.classList.remove("show");
+                    checkmarkSubmitElement.classList.add("hide");
+                }, 3500, Date.now(), checkHttp);
+            } else {
+                checkmarkSubmitElement.classList.remove("show");
+                checkmarkSubmitElement.classList.add("hide");
             }
-            $("#check-submit").attr("class", "check check-complete");
-            $("#fill-submit").attr("class", "fill fill-complete");
-        }, 100, Date.now(), httpStatus);
-        checkmarkSubmitSuccessTimer = setTimeout(function (timestamp,httpStatus) {
-            if ((timestamp < submitTimerMaxTime) || !httpStatus) {
-                return;
-            }
-            $("#check-submit").attr("class", "check check-complete success");
-            $("#fill-submit").attr("class", "fill fill-complete success");
-            $("#path-submit").attr("class", "path path-complete");
-        }, 300, Date.now(), httpStatus);
-        hideCheckmarkSubmitTimer = setTimeout(function (timestamp,httpStatus) {
-            if ((timestamp < submitTimerMaxTime) || !httpStatus) {
-                return;
-            }
-            checkmarkSubmitElement.classList.remove("show");
-            checkmarkSubmitElement.classList.add("hide");
-        }, 3500, Date.now(), httpStatus);
+        }
+        submitButton.disabled = false;
+    };
+    xhr.onerror = function() {
+        // Handle error
+        checkmarkSubmitElement.classList.remove("show");
+        checkmarkSubmitElement.classList.add("hide");
         submitButton.disabled = false;
     };
     xhr.send(formData);
@@ -275,29 +290,42 @@ function submitShortenUrl() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/", true);
     xhr.onreadystatechange = function() {
-        var checkHttp = checkHttpStatus(xhr, "response-shorten-url");
-        checkmarkSubmitShortenUrlCompleteTimer = setTimeout(function (timestamp, checkHttp) {
-            if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
-                return;
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            var checkHttp = checkHttpStatus(xhr, "response-shorten-url");
+            if (checkHttp) {
+                checkmarkSubmitShortenUrlCompleteTimer = setTimeout(function (timestamp, checkHttp) {
+                    if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    $("#check-submit-shorten-url").attr("class", "check check-complete");
+                    $("#fill-submit-shorten-url").attr("class", "fill fill-complete");
+                }, 100, submitShortenUrlTimerMaxTime, checkHttp);
+                checkmarkSubmitShortenUrlSuccessTimer = setTimeout(function (timestamp, checkHttp) {
+                    if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    $("#check-submit-shorten-url").attr("class", "check check-complete success");
+                    $("#fill-submit-shorten-url").attr("class", "fill fill-complete success");
+                    $("#path-submit-shorten-url").attr("class", "path path-complete");
+                }, 300, submitShortenUrlTimerMaxTime, checkHttp);
+                hideCheckmarkSubmitShortenUrlTimer = setTimeout(function (timestamp, checkHttp) {
+                    if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    checkmarkElement.classList.remove("show");
+                    checkmarkElement.classList.add("hide");
+                }, 3500, submitShortenUrlTimerMaxTime, checkHttp);
+            } else {
+                checkmarkElement.classList.remove("show");
+                checkmarkElement.classList.add("hide");
             }
-            $("#check-submit-shorten-url").attr("class", "check check-complete");
-            $("#fill-submit-shorten-url").attr("class", "fill fill-complete");
-        }, 100, submitShortenUrlTimerMaxTime, checkHttp);
-        checkmarkSubmitShortenUrlSuccessTimer = setTimeout(function (timestamp, checkHttp) {
-            if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
-                return;
-            }
-            $("#check-submit-shorten-url").attr("class", "check check-complete success");
-            $("#fill-submit-shorten-url").attr("class", "fill fill-complete success");
-            $("#path-submit-shorten-url").attr("class", "path path-complete");
-        }, 300, submitShortenUrlTimerMaxTime, checkHttp);
-        hideCheckmarkSubmitShortenUrlTimer = setTimeout(function (timestamp, checkHttp) {
-            if ((timestamp < submitShortenUrlTimerMaxTime) || !checkHttp) {
-                return;
-            }
-            checkmarkElement.classList.remove("show");
-            checkmarkElement.classList.add("hide");
-        }, 3500, submitShortenUrlTimerMaxTime, checkHttp);
+        }
+        submitButton.disabled = false;
+    };
+    xhr.onerror = function() {
+        // Handle error
+        checkmarkElement.classList.remove("show");
+        checkmarkElement.classList.add("hide");
         submitButton.disabled = false;
     };
     xhr.send(formData);
@@ -365,29 +393,42 @@ function submitScript() {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/", true);
     xhr.onreadystatechange = function() {
-        var checkHttp = checkHttpStatus(xhr, "response-script")
-        checkmarkSubmitScriptCompleteTimer = setTimeout(function (timestamp, checkHttp) {
-            if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
-                return;
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+            var checkHttp = checkHttpStatus(xhr, "response-script")
+            if (checkHttp) {
+                checkmarkSubmitScriptCompleteTimer = setTimeout(function (timestamp, checkHttp) {
+                    if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    $("#check-submit-script").attr("class", "check check-complete");
+                    $("#fill-submit-script").attr("class", "fill fill-complete");
+                }, 100, submitScriptTimerMaxTime, checkHttp);
+                checkmarkSubmitScriptSuccessTimer = setTimeout(function (timestamp, checkHttp) {
+                    if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    $("#check-submit-script").attr("class", "check check-complete success");
+                    $("#fill-submit-script").attr("class", "fill fill-complete success");
+                    $("#path-submit-script").attr("class", "path path-complete");
+                }, 300, submitScriptTimerMaxTime, checkHttp);
+                hideCheckmarkSubmitScriptTimer = setTimeout(function (timestamp, checkHttp) {
+                    if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
+                        return;
+                    }
+                    checkmarkSubmitElement.classList.remove("show");
+                    checkmarkSubmitElement.classList.add("hide");
+                }, 3500, submitScriptTimerMaxTime, checkHttp);
+            } else {
+                checkmarkSubmitElement.classList.remove("show");
+                checkmarkSubmitElement.classList.add("hide");
             }
-            $("#check-submit-script").attr("class", "check check-complete");
-            $("#fill-submit-script").attr("class", "fill fill-complete");
-        }, 100, submitScriptTimerMaxTime, checkHttp);
-        checkmarkSubmitScriptSuccessTimer = setTimeout(function (timestamp, checkHttp) {
-            if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
-                return;
-            }
-            $("#check-submit-script").attr("class", "check check-complete success");
-            $("#fill-submit-script").attr("class", "fill fill-complete success");
-            $("#path-submit-script").attr("class", "path path-complete");
-        }, 300, submitScriptTimerMaxTime, checkHttp);
-        hideCheckmarkSubmitScriptTimer = setTimeout(function (timestamp, checkHttp) {
-            if ((timestamp < submitScriptTimerMaxTime) || !checkHttp) {
-                return;
-            }
-            checkmarkSubmitElement.classList.remove("show");
-            checkmarkSubmitElement.classList.add("hide");
-        }, 3500, submitScriptTimerMaxTime, checkHttp);
+        }
+        submitButton.disabled = false;
+    };
+    xhr.onerror = function() {
+        // Handle error
+        checkmarkSubmitElement.classList.remove("show");
+        checkmarkSubmitElement.classList.add("hide");
         submitButton.disabled = false;
     };
     xhr.send(formData);
@@ -454,7 +495,11 @@ function getFileFromUrl() {
                 checkmarkElement.classList.add("hide");
             }
         };
-        
+        xhr.onerror = function() {
+            // Handle error
+            checkmarkElement.classList.remove("show");
+            checkmarkElement.classList.add("hide");
+        };
         // Send the POST request
         xhr.send(formData);
     } catch (error) {
@@ -471,27 +516,25 @@ function clearResponseDiv(responseDivId) {
 }
 
 function checkHttpStatus(xhr, responseDivId) {
-    if (xhr.readyState === XMLHttpRequest.DONE) {
-        if (xhr.status === 200) {
-            showResponse(xhr.responseText.trim(), xhr.status, responseDivId, xhr);
-            return true;
-        } else if (xhr.status === 400) {
-            showResponse("400 Bad request", xhr.status, responseDivId, xhr);
-        } else if (xhr.status === 401) {
-            showResponse("401 Unauthorized", xhr.status, responseDivId, xhr);
-        } else if (xhr.status === 404) {
-            showResponse("404 Not Found", xhr.status, responseDivId, xhr);
-        } else if (xhr.status === 411) {
-            showResponse("411 Length Required", xhr.status, responseDivId, xhr);
-        } else if (xhr.status === 413) {
-            showResponse("413 Payload Too Large", xhr.status, responseDivId, xhr);
-        } else if (xhr.status === 415) {
-            showResponse("415 Unsupported Media Type", xhr.status, responseDivId, xhr);
-        } else if (xhr.status === 451) {
-            showResponse("451 Unavailable For Legal Reasons", xhr.status, responseDivId, xhr);
-        } else {
-            showResponse("ERROR CODE" + xhr.status, xhr.status, responseDivId, xhr);
-        }
+    if (xhr.status === 200) {
+        showResponse(xhr.responseText.trim(), xhr.status, responseDivId, xhr);
+        return true;
+    } else if (xhr.status === 400) {
+        showResponse("400 Bad request", xhr.status, responseDivId, xhr);
+    } else if (xhr.status === 401) {
+        showResponse("401 Unauthorized", xhr.status, responseDivId, xhr);
+    } else if (xhr.status === 404) {
+        showResponse("404 Not Found", xhr.status, responseDivId, xhr);
+    } else if (xhr.status === 411) {
+        showResponse("411 Length Required", xhr.status, responseDivId, xhr);
+    } else if (xhr.status === 413) {
+        showResponse("413 Payload Too Large", xhr.status, responseDivId, xhr);
+    } else if (xhr.status === 415) {
+        showResponse("415 Unsupported Media Type", xhr.status, responseDivId, xhr);
+    } else if (xhr.status === 451) {
+        showResponse("451 Unavailable For Legal Reasons", xhr.status, responseDivId, xhr);
+    } else {
+        showResponse("ERROR CODE" + xhr.status, xhr.status, responseDivId, xhr);
     }
     return false;
 }
