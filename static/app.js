@@ -444,7 +444,7 @@ function getFileFromUrl() {
     downloadLink.disabled = true;
 
     try {
-        new URL(downloadLink);
+        // new URL(downloadLink);
         downloadFromUrlTimerMaxTime = Date.now();
         clearTimeout(checkmarkDownloadFromUrlCompleteTimer);
         clearTimeout(checkmarkDownloadFromUrlSuccessTimer);
