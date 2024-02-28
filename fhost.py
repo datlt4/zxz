@@ -42,6 +42,8 @@ from pathlib import Path
 from slugify import slugify
 from flask_cors import CORS
 
+HTTP_URL_PATTERN = re.compile(r"(http[s]*://[\w.:]+)/?.*")
+
 app = Flask(__name__, instance_relative_config=True)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 app.config.update(
@@ -523,15 +525,17 @@ def fhost():
 def fetch_file():
     if request.method == "POST":
         url = request.form["url"]
-        base_url = re.findall(r"(http[s]*://[\w.:]+)/?.*", request.url)
-
-        if len(base_url) > 0:
-            base_url = base_url[0]
-            url = url.replace(base_url, "http://localhost:5000")
+        if len(HTTP_URL_PATTERN.findall(url))==0:
+            url = os.path.join("http://localhost:5000", url)
+        else:
+            base_url = HTTP_URL_PATTERN.findall(request.url)
+            if len(base_url) > 0:
+                base_url = base_url[0]
+                url = url.replace(base_url, "http://localhost:5000")
 
         if not request.url:
             return jsonify({"error": "URL parameter is required"}), 400
-        
+
         try:
             response = requests.get(url)
             if response.status_code != 200:
