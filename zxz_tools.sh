@@ -268,6 +268,9 @@ fi
 
 # Start server
 if [ ${flag_START_ZXZ} -gt 0 ] || [ ${flag_BACKUP} -gt 0 ] || [ ${flag_RESTORE} -gt 0 ]; then
+    command="docker-compose pull"
+    print_with_color "$ ${command}\n" "\033[36m"
+    eval "${command}"
     command="docker-compose -f ${docker_compose_yml} up"
     if [ ${flag_BUILD} -gt 0 ]; then
         command="${command} --build --force-recreate"

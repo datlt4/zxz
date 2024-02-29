@@ -37,6 +37,8 @@ import datetime
 import typing
 import requests
 import secrets
+import tempfile
+import shutil
 from validators import url as url_valid
 from pathlib import Path
 from slugify import slugify
@@ -109,6 +111,19 @@ Please install python-magic.""")
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+def calculate_sha256(file_path, chunk_size=4096):
+    sha256_result = sha256()  # Initialize SHA-256 hash object
+    # Open the file in binary mode for reading
+    with open(file_path, 'rb') as file:
+        # Read the file in chunks and update the hash
+        while True:
+            chunk = file.read(chunk_size)  # Read a chunk of data
+            if not chunk:  # End of file
+                break
+            sha256_result.update(chunk)  # Update the hash with the chunk
+    # Return the hexadecimal representation of the hash digest
+    return sha256_result.hexdigest()
 
 class URL(db.Model):
     __tablename__ = "URL"
@@ -219,12 +234,17 @@ class File(db.Model):
     Any value greater that the longest allowed file lifespan will be rounded down to that
     value.
     """
-    def store(file_, requested_expiration: typing.Optional[int], addr, ua, secret: str):
-        data = file_.read()
-        digest = sha256(data).hexdigest()
+    def store(file_, requested_expiration: typing.Optional[int], addr, ua, secret: str, temp_filename: str = None):
+        data = None
+        digest = None
+        if (temp_filename):
+            digest = calculate_sha256(temp_filename)
+        else:
+            data = file_.read()
+            digest = sha256(data).hexdigest()
 
         def get_mime():
-            guess = mimedetect.from_buffer(data)
+            guess = mimedetect.from_file(temp_filename) if temp_filename else mimedetect.from_buffer(data)
             app.logger.debug(f"MIME - specified: '{file_.content_type}' - detected: '{guess}'")
 
             if not file_.content_type or not "/" in file_.content_type or file_.content_type == "application/octet-stream":
@@ -260,9 +280,10 @@ class File(db.Model):
                 else:
                     ext = ""
 
-            return ext[:app.config["FHOST_MAX_EXT_LENGTH"]] or ".bin"
+            return "." + (ext[:app.config["FHOST_MAX_EXT_LENGTH"]] or ".bin").split(".")[-1]
 
-        expiration = File.get_expiration(requested_expiration, len(data))
+        file_size = os.path.getsize(temp_filename)
+        expiration = File.get_expiration(requested_expiration, file_size if temp_filename else len(data))
         isnew = True
 
         f = File.query.filter_by(sha256=digest).first()
@@ -300,10 +321,14 @@ class File(db.Model):
         p = storage / digest
 
         if not p.is_file():
-            with open(p, "wb") as of:
-                of.write(data)
+            if temp_filename:
+                # Move the temporary file to the specified destination path
+                shutil.move(temp_filename, str(p))
+            else:
+                with open(p, "wb") as of:
+                    of.write(data)
 
-        f.size = len(data)
+        f.size = file_size if temp_filename else len(data)
 
         if not f.nsfw_score and app.config["NSFW_DETECT"]:
             f.nsfw_score = nsfw.detect(str(p))
@@ -311,7 +336,6 @@ class File(db.Model):
         db.session.add(f)
         db.session.commit()
         return f, isnew
-
 
 class UrlEncoder(object):
     def __init__(self,alphabet, min_length):
@@ -376,11 +400,11 @@ requested_expiration can be:
 Any value greater that the longest allowed file lifespan will be rounded down to that
 value.
 """
-def store_file(f, requested_expiration:  typing.Optional[int], addr, ua, secret: str):
+def store_file(f, requested_expiration:  typing.Optional[int], addr, ua, secret: str, temp_filename: str = None):
     if in_upload_bl(addr):
         return "Your host is blocked from uploading files.\n", 451
 
-    sf, isnew = File.store(f, requested_expiration, addr, ua, secret)
+    sf, isnew = File.store(f, requested_expiration, addr, ua, secret, temp_filename)
 
     response = make_response(sf.geturl())
     response.headers["X-Expires"] = sf.expiration
@@ -495,18 +519,38 @@ def fhost():
     if request.method == "POST":
         sf = None
         if "file" in request.files:
+            # Create a temporary directory to store the uploaded file
+            temp_dir = tempfile.mkdtemp()
             try:
+                # Get the file from the request
+                file = request.files['file']
+                # Generate a random filename
+                temp_filename = next(tempfile._get_candidate_names())
+                # Save the file to disk in chunks
+                file_path = os.path.join(temp_dir, temp_filename)
+                with open(file_path, 'wb') as f:
+                    while True:
+                        chunk = file.stream.read(8192)  # Read 8KB at a time
+                        if not chunk:
+                            break
+                        else:
+                            f.write(chunk)
+                os.system(f"ls -lht {file_path}")
                 # Store the file with the requested expiration date
                 return store_file(
                     request.files["file"],
                     int(request.form["expires"]) if ("expires" in request.form) else None,
                     request.remote_addr,
                     request.user_agent.string,
-                    slugify(request.form["secret"]) if (("secret" in request.form)) else None
+                    slugify(request.form["secret"]) if ("secret" in request.form) else None,
+                    file_path
                 )
-            except ValueError:
-                # The requested expiration date wasn't properly formed
-                abort(400)
+            except Exception as e:
+                print(e)
+                abort(int(str(e)[:3]))
+            finally:
+                if os.path.exists(temp_dir):
+                    shutil.rmtree(temp_dir)
         elif "url" in request.form:
             return store_url(
                 request.form["url"],
