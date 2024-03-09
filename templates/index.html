@@ -205,7 +205,7 @@
         <div class="col-md-12 indented-content">
             <div class="input-group mb-3">
                 <input type="text" id="download-url" class="form-control" placeholder="Download link" aria-label="Download link" aria-describedby="get-data-from-url">
-                <button class="btn btn-outline-primary" type="button" id="get-data-from-url" onclick="getFileFromUrl()">Download</button>
+                <button class="btn btn-outline-primary" type="button" id="get-data-from-url">Download</button>
             </div>
             <div id="download-from-url-feedback" class="invalid-feedback">Please enter an valid URL.</div>
             <form id="scriptForm" enctype="multipart/form-data">
@@ -306,6 +306,8 @@
 <!-- CodeMirror -->
 <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/6.65.7/codemirror.min.css"></link>
+<!-- FileSaver.js -->
+<script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <!-- Customize JS -->
 <script src="{{ url_for('static', filename='app.js') }}"></script>
 <script type="text/javascript">

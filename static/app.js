@@ -4,6 +4,9 @@ let checkmarkSuccessTimer;
 let hideCheckmarkTimer;
 var editor;
 
+var longPressTimer;
+var fetchDataLongPressed = false;
+
 $(document).ready(function () {
     editor = CodeMirror.fromTextArea(document.getElementById('text-editor'), {
        lineNumbers: true,
@@ -103,6 +106,85 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
     }, 5000);
+
+    document.getElementById("get-data-from-url").addEventListener("mousedown", function(event) {
+        longPressTimer = setTimeout(function() {
+            // Long press detected, initiate the file download
+            getFileFromUrl(true);
+            fetchDataLongPressed = true;
+        }, 700); // Adjust the duration for long press as needed (in milliseconds)
+    });
+
+    document.getElementById("get-data-from-url").addEventListener("mouseup", function(event) {
+        clearTimeout(longPressTimer);
+        if (!fetchDataLongPressed) {
+            getFileFromUrl(false);
+        }
+        fetchDataLongPressed = false;
+    });
+
+    document.getElementById("get-data-from-url").addEventListener("mouseleave", function(event) {
+        clearTimeout(longPressTimer);
+        fetchDataLongPressed = false;
+    });
+
+    // Add event listeners for drag and drop to the document
+    document.addEventListener("dragover", function(event) {
+        // Prevent the default behavior to allow dropping
+        event.preventDefault();
+    });
+
+    document.addEventListener("drop", function(event) {
+        // Prevent the default behavior to allow dropping
+        event.preventDefault();
+        // Get the dropped files from the event data
+        var files = event.dataTransfer.files;
+        // Process the dropped files
+        if (files.length > 0) {
+            checkmarkTimerMaxTime = Date.now();
+            clearTimeout(checkmarkCompleteTimer);
+            clearTimeout(checkmarkSuccessTimer);
+            clearTimeout(hideCheckmarkTimer);
+            $("#check-pasting").attr("class", "check");
+            $("#fill-pasting").attr("class", "fill");
+            $("#path-pasting").attr("class", "path");
+            var checkmarkElement = document.getElementById("checkmark-pasting");
+            checkmarkElement.classList.remove("hide");
+            checkmarkElement.classList.add("show");
+    
+            try {
+                var webUploadSection = document.getElementById("web-upload");
+                window.scrollTo({ top: webUploadSection.offsetTop, behavior: "smooth" /* Smooth scroll behavior */ });
+                var fileInput = document.getElementById("file");
+                // Assuming you want to upload the first dropped file
+                var file = files[0];
+                // Update the file input with the dropped file
+                var fileInput = document.getElementById("file");
+                fileInput.files = files;
+                // console.log("Dropped file:", file.name);
+
+                if (validateFileSelection()) {
+                    clearResponseDiv("response");
+                    checkmarkCompleteTimer = setTimeout(function (timestamp) {
+                        $("#check-pasting").attr("class", "check check-complete");
+                        $("#fill-pasting").attr("class", "fill fill-complete");
+                    }, 200, checkmarkTimerMaxTime);
+                    checkmarkSuccessTimer = setTimeout(function (timestamp) {
+                        $("#check-pasting").attr("class", "check check-complete success");
+                        $("#fill-pasting").attr("class", "fill fill-complete success");
+                        $("#path-pasting").attr("class", "path path-complete");
+                    }, 500, checkmarkTimerMaxTime);
+                    hideCheckmarkTimer = setTimeout(function (timestamp) {
+                        checkmarkElement.classList.remove("show");
+                        checkmarkElement.classList.add("hide");
+                    }, 3500, checkmarkTimerMaxTime);
+                }
+            } catch (error) {
+                checkmarkElement.classList.remove("show");
+                checkmarkElement.classList.add("hide");
+            }
+        }
+    });
 
     document.querySelector('a[href="#the-null-pointer"]').addEventListener("click", scrollIntoView);
     document.querySelector('a[href="#terms-of-service"]').addEventListener("click", scrollIntoView);
@@ -439,10 +521,27 @@ let checkmarkDownloadFromUrlCompleteTimer; // Define a global variable to hold t
 let checkmarkDownloadFromUrlSuccessTimer;
 let hideCheckmarkDownloadFromUrlTimer;
 
-function getFileFromUrl() {
+function getFilenameFromXhr(xhr) {
+    var filename = "";
+    var disposition = xhr.getResponseHeader("Content-Disposition");
+    if (disposition && (disposition.indexOf("attachment") !== -1 || disposition.indexOf("inline") !== -1)) {
+        var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+        var matches = filenameRegex.exec(disposition);
+        if (matches != null && matches[1]) { 
+            filename = matches[1].replace(/['"]/g, '');
+        }
+    }
+    return filename === "" ? "untitled" : filename;
+}
+
+function getFileFromUrl(fetch_file) {
     var downloadLink = document.getElementById("download-url").value;
     downloadLink.disabled = true;
 
+    if (downloadLink === "" ||  downloadLink === null) {
+        alert("Enter valide URL");
+        return;
+    }
     try {
         // new URL(downloadLink);
         downloadFromUrlTimerMaxTime = Date.now();
@@ -460,12 +559,24 @@ function getFileFromUrl() {
         formData.append("url", downloadLink);
 
         var xhr = new XMLHttpRequest();
-        xhr.open("POST", "/fetch-file", true);
+        if (fetch_file) {
+            xhr.open("POST", "/fetch-file", true);
+            xhr.responseType = "blob";
+        } else {
+            xhr.open("POST", "/fetch-content", true);
+        }
         xhr.onreadystatechange = function () {
-            if (xhr.status === 200) {
+            if (xhr.readyState === 4 && xhr.status === 200) {
                 // Request was successful, handle the response
-                editor.setValue(xhr.responseText);
-                clearResponseDiv("response-script");
+                if (fetch_file) {
+                    // Create a Blob object from the response
+                    var blob = new Blob([xhr.response], { type: xhr.getResponseHeader("Content-Type") });
+                    // Use FileSaver.js to save the Blob as a file
+                    saveAs(blob, getFilenameFromXhr(xhr));
+                } else {
+                    editor.setValue(xhr.responseText);
+                    clearResponseDiv("response-script");
+                }
                 checkmarkDownloadFromUrlCompleteTimer = setTimeout(function (timestamp) {
                     if (timestamp < downloadFromUrlTimerMaxTime) {
                         return;
@@ -533,7 +644,9 @@ function checkHttpStatus(xhr, responseDivId) {
         showResponse("415 Unsupported Media Type", xhr.status, responseDivId, xhr);
     } else if (xhr.status === 451) {
         showResponse("451 Unavailable For Legal Reasons", xhr.status, responseDivId, xhr);
-    } else {
+    } else if (xhr.status === 500) {
+        showResponse("500 Internal Server Error", xhr.status, responseDivId, xhr);
+    }  else {
         showResponse("ERROR CODE" + xhr.status, xhr.status, responseDivId, xhr);
     }
     return false;
