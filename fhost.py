@@ -19,7 +19,7 @@
     and limitations under the License.
 """
 
-from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template
+from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import and_, or_
@@ -31,6 +31,7 @@ from mimetypes import guess_extension
 import click
 import re
 import os
+import io
 import sys
 import time
 import datetime
@@ -43,6 +44,7 @@ from validators import url as url_valid
 from pathlib import Path
 from slugify import slugify
 from flask_cors import CORS
+from inspect import currentframe, getframeinfo
 
 HTTP_URL_PATTERN = re.compile(r"(http[s]*://[\w.:]+)/?.*")
 
@@ -463,56 +465,60 @@ def manage_file(f):
 @app.route("/<path:path>", methods=["GET", "POST"])
 @app.route("/s/<secret>/<path:path>", methods=["GET", "POST"])
 def get(path, secret=None):
-    p = Path(path.split("/", 1)[0])
-    sufs = "".join(p.suffixes[-2:])
-    name = p.name[:-len(sufs) or None]
+    try:
+        p = Path(path.split("/", 1)[0])
+        sufs = "".join(p.suffixes[-2:])
+        name = p.name[:-len(sufs) or None]
 
-    if "." in name:
-        abort(404)
-
-    id = su.debase(name)
-
-    if sufs:
-        f = File.query.get(id)
-
-        if f and f.ext == sufs:
-            if f.secret != secret:
-                abort(404)
-
-            if f.removed:
-                abort(451)
-
-            fpath = f.getpath()
-
-            if not fpath.is_file():
-                abort(404)
-
-            if request.method == "POST":
-                return manage_file(f)
-
-            if app.config["FHOST_USE_X_ACCEL_REDIRECT"]:
-                response = make_response()
-                response.headers["Content-Type"] = f.mime
-                response.headers["Content-Length"] = f.size
-                response.headers["X-Accel-Redirect"] = "/" + str(fpath)
-            else:
-                response = send_from_directory(app.config["FHOST_STORAGE_PATH"], f.sha256, mimetype = f.mime, download_name=path)
-
-            response.headers["X-Expires"] = f.expiration
-            return response
-    else:
-        if request.method == "POST":
-            abort(405)
-
-        if "/" in path:
+        if "." in name:
             abort(404)
 
-        u = URL.query.get(id)
+        id = su.debase(name)
 
-        if u:
-            return redirect(u.url)
+        if sufs:
+            f = File.query.get(id)
 
-    abort(404)
+            if f and f.ext == sufs:
+                if f.secret != secret:
+                    abort(404)
+
+                if f.removed:
+                    abort(451)
+
+                fpath = f.getpath()
+
+                if not fpath.is_file():
+                    abort(404)
+
+                if request.method == "POST":
+                    return manage_file(f)
+
+                if app.config["FHOST_USE_X_ACCEL_REDIRECT"]:
+                    response = make_response()
+                    response.headers["Content-Type"] = f.mime
+                    response.headers["Content-Length"] = f.size
+                    response.headers["X-Accel-Redirect"] = "/" + str(fpath)
+                else:
+                    response = send_from_directory(app.config["FHOST_STORAGE_PATH"], f.sha256, mimetype = f.mime, download_name=path)
+
+                response.headers["X-Expires"] = f.expiration
+                return response
+        else:
+            if request.method == "POST":
+                abort(405)
+
+            if "/" in path:
+                abort(404)
+
+            u = URL.query.get(id)
+
+            if u:
+                return redirect(u.url)
+
+        abort(404)
+    except OverflowError as e:
+        print(e)
+        abort(500)
 
 @app.route("/", methods=["GET", "POST"])
 def fhost():
@@ -565,6 +571,31 @@ def fhost():
     else:
         return render_template("index.html")
 
+@app.route('/fetch-content', methods=["POST"])
+def fetch_content():
+    if request.method == "POST":
+        url = request.form["url"]
+        if len(HTTP_URL_PATTERN.findall(url))==0:
+            url = os.path.join("http://localhost:5000", url)
+        else:
+            base_url = HTTP_URL_PATTERN.findall(request.url)
+            if len(base_url) > 0:
+                base_url = base_url[0]
+                url = url.replace(base_url, "http://localhost:5000")
+
+        if not request.url:
+            return jsonify({"error": "URL parameter is required"}), 400
+        print("fetch-content:", url)
+        try:
+            response = requests.get(url)
+            if response.status_code != 200:
+                return "Failed to fetch file", response.status_code
+
+            # Return the file content
+            return response.text, 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
 @app.route('/fetch-file', methods=["POST"])
 def fetch_file():
     if request.method == "POST":
@@ -579,16 +610,20 @@ def fetch_file():
 
         if not request.url:
             return jsonify({"error": "URL parameter is required"}), 400
-
+        print("fetch-file:", url)
         try:
             response = requests.get(url)
             if response.status_code != 200:
                 return "Failed to fetch file", response.status_code
-
             # Return the file content
-            return response.text, 200
+            # return response.text, 200
+            res_f = make_response(send_file(io.BytesIO(response.content), as_attachment=True, download_name=os.path.basename(url)))
+            res_f.headers["Content-Type"] = response.headers["Content-Type"]
+            return res_f
         except Exception as e:
+            print(e)
             return jsonify({"error": str(e)}), 500
+
 
 @app.route("/robots.txt")
 def robots():
