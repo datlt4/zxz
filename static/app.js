@@ -107,27 +107,14 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }, 5000);
 
-    document.getElementById("get-data-from-url").addEventListener("mousedown", function(event) {
-        longPressTimer = setTimeout(function() {
-            // Long press detected, initiate the file download
-            getFileFromUrl(true);
-            fetchDataLongPressed = true;
-        }, 700); // Adjust the duration for long press as needed (in milliseconds)
-    });
+    document.getElementById("get-data-from-url").addEventListener("mousedown", startLongPress);
+    document.getElementById("get-data-from-url").addEventListener("touchstart", startLongPress);
 
-    document.getElementById("get-data-from-url").addEventListener("mouseup", function(event) {
-        clearTimeout(longPressTimer);
-        if (!fetchDataLongPressed) {
-            getFileFromUrl(false);
-        }
-        fetchDataLongPressed = false;
-    });
+    document.getElementById("get-data-from-url").addEventListener("mouseup", endLongPress);
+    document.getElementById("get-data-from-url").addEventListener("touchend", endLongPress);
 
-    document.getElementById("get-data-from-url").addEventListener("mouseleave", function(event) {
-        clearTimeout(longPressTimer);
-        fetchDataLongPressed = false;
-    });
-
+    document.getElementById("get-data-from-url").addEventListener("mouseleave", cancelLongPress);
+    document.getElementById("get-data-from-url").addEventListener("touchcancel", cancelLongPress);
     // Add event listeners for drag and drop to the document
     document.addEventListener("dragover", function(event) {
         // Prevent the default behavior to allow dropping
@@ -194,6 +181,30 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelector('a[href="#operator-notes"]').addEventListener("click", scrollIntoView);
     document.querySelector('a[href="#file-retention-period"]').addEventListener("click", scrollIntoView);
 });
+
+function startLongPress(event) {
+    event.preventDefault();
+    longPressTimer = setTimeout(function() {
+        // Long press detected, initiate the file download
+        getFileFromUrl(true);
+        fetchDataLongPressed = true;
+    }, 700); // Adjust the duration for long press as needed (in milliseconds)
+}
+
+function endLongPress(event) {
+    event.preventDefault();
+    clearTimeout(longPressTimer);
+    if (!fetchDataLongPressed) {
+        getFileFromUrl(false);
+    }
+    fetchDataLongPressed = false;
+}
+
+function cancelLongPress(event) {
+    event.preventDefault();
+    clearTimeout(longPressTimer);
+    fetchDataLongPressed = false;
+}
 
 function scrollIntoView(event) {
     event.preventDefault(); // Prevent default anchor behavior
