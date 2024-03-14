@@ -1,0 +1,98 @@
+{% extends "layout.html" %}
+
+{% block title %}Login | nullptr{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div id="flash-message-{{ category }}" data-category="{{ category }}" data-message="{{ message }}"></div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="row justify-content-center">
+    <div class="col-md-6 mb-4 border rounded-4 p-3">
+        <h2 id="login">
+            <span>Log in to your account</span>
+            <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#login" style="padding-left: 0.375em;"></a>
+        </h2>
+        <div class="row">
+            <div class="col-md-12 indented-content">
+                <form id="login-form" method="POST" action="/login">
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center">
+                            <label for="username-login" class="form-label font-monospace">
+                                <span style="color: #329cd6;">email/username</span><span style="color: #fe4740;">*</span>
+                            </label>
+                        </div>
+                        <input type="input" class="form-control" id="username-login" name="user_info" placeholder="Enter your email address or username">
+                        <div id="username-login-feedback" class="invalid-feedback">
+                            <span id="feedback-text">Please check your login details.</span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex align-items-center">
+                            <label for="password-login" class="form-label font-monospace">
+                                <span style="color: #329cd6;">password</span><span style="color: #fe4740;">*</span>
+                            </label>
+                        </div>
+                        <input type="password" class="form-control" id="password-login" name="password" placeholder="Enter your password">
+                        <div id="password-login-feedback" class="invalid-feedback">
+                            <span id="feedback-text">Try to remember and re-enter the correct password.</span>
+                        </div>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center">
+                        <label class="form-label mb-0" for="remember-me">
+                            <input class="form-check-input me-2" type="checkbox" id="remember-me" name="remember">
+                            <span class="font-monospace" style="color: #329cd6;">remember me</span>
+                        </label>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center justify-content-center">
+                        <button id="submit-btn" type="button" class="btn btn-primary w-100" onclick="submitLoginForm()">Log In</button>
+                    </div>
+                    <hr>
+                    <div class="mb-3 d-flex align-items-center justify-content-center">
+                        <button id="login-with-google-btn" type="button" class="btn btn-outline-secondary w-100" onclick="loginWithGoogle()">
+                            <img style="margin-right:10px;" width="20px" height="20px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png">Sign In with Google
+                        </button>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center justify-content-center">
+                        <button id="login-with-github-btn" type="button" class="btn btn-outline-secondary w-100" onclick="loginWithGithub()">
+                            <img style="margin-right:10px;" width="20px" height="20px" src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/91/Octicons-mark-github.svg/600px-Octicons-mark-github.svg.png">Sign In with Github
+                        </button>
+                    </div>
+                    <div class="mb-3 d-flex align-items-center">
+                        <a href="#" class="form-label font-monospace mb-0" style="color: #329cd6;">Forget Password?</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11; top: 55px; right: 0;">
+            <div id="success-toast" class="toast bg-success" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="true">
+                <div class="toast-header" style="background-color: #d5e7dd;">
+                    <strong class="me-auto">Success</strong>
+                    <!-- <small>11 mins ago</small> -->
+                    <button id="close-success-toast" type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" style="background-color: #eaf3ee;">
+                    Thank you for registering! Please activate your account via email before logging in.
+                </div>
+            </div>
+            <div id="perimission-denied-toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-animation="true">
+                <div class="toast-header" style="background-color: #f6d8db;">
+                    <strong class="me-auto">Permission Denied</strong>
+                    <button id="close-perimission-denied-toast" type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+                <div class="toast-body" style="background-color: #fbeced;">
+                    Cannot log in anonymous account
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Customize JS -->
+<script src="{{ url_for('static', filename='login.js') }}"></script>
+{% endblock %}

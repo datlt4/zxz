@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 
-{% block title %}ZXZ{% endblock %}
+{% block title %}nullptr{% endblock %}
 
 {% block content %}
 {% set fhost_url = url_for("fhost", _external=True).rstrip("/") %}
@@ -314,18 +314,18 @@
     var min_age = {{'{: 6}'.format(config.get("FHOST_MIN_EXPIRATION", 2592000000)/86400000)}};
     var max_age = {{'{: 6}'.format(config.get("FHOST_MAX_EXPIRATION", 2592000000)/86400000)}};
     var max_size = {{'{: 6}'.format(config["MAX_CONTENT_LENGTH"] / 1024 / 1024)}};
-    
+
     function calculate_retention(file_size, min_age, max_age, max_size) {
         return min_age + (-max_age + min_age) * Math.pow((file_size / max_size - 1), 3);
     }
-    
+
     var data_x = [];
     var data_y = [];
     for (let i = 0; i <= max_size; i += 16) {
         data_x.push(i);
         data_y.push(calculate_retention(i, min_age, max_age, max_size));
     }
-    
+
     var retentionChart = new Chart(document.getElementById('retentionChart'), {
         type: 'line',
         data: {

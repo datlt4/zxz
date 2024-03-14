@@ -8,6 +8,7 @@ Flask==3.0.2
 flask_sqlalchemy==3.1.1
 python_magic==0.4.27
 Flask-Cors==4.0.0
+Flask-Login==0.6.3
 
 # vscan
 clamd==1.0.2
@@ -26,3 +27,4 @@ python-mpv==1.0.5
 pytest==8.0.1
 pyopenssl==24.0.0
 python-slugify==8.0.4
+python-dotenv==1.0.1

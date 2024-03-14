@@ -32,6 +32,15 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
+    // const avatar = document.getElementById('avatar');
+    const avatar = document.getElementById('avatar');
+    if (avatar) {
+        avatar.addEventListener('click', function() {
+            avatar.classList.toggle('active');
+            document.getElementById("popup-user-profile").classList.toggle("show");
+        });
+    }
+
     window.addEventListener("paste", event => {
         var isTextInput = event.target.tagName.toLowerCase() === 'input' || event.target.tagName.toLowerCase() === 'textarea';
         var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
@@ -138,7 +147,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var checkmarkElement = document.getElementById("checkmark-pasting");
             checkmarkElement.classList.remove("hide");
             checkmarkElement.classList.add("show");
-    
+
             try {
                 var webUploadSection = document.getElementById("web-upload");
                 window.scrollTo({ top: webUploadSection.offsetTop, behavior: "smooth" /* Smooth scroll behavior */ });
@@ -538,7 +547,7 @@ function getFilenameFromXhr(xhr) {
     if (disposition && (disposition.indexOf("attachment") !== -1 || disposition.indexOf("inline") !== -1)) {
         var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
         var matches = filenameRegex.exec(disposition);
-        if (matches != null && matches[1]) { 
+        if (matches != null && matches[1]) {
             filename = matches[1].replace(/['"]/g, '');
         }
     }

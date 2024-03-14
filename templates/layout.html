@@ -14,7 +14,8 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='checkmark.css') }}">
     <!-- Favicon -->
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <!--<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">-->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='nullptr.svg') }}">
 </head>
 
 <body>
@@ -24,7 +25,9 @@
             {% block content %}{% endblock %}
         </div>
     </div>
-    {% include "footer.html" %}
+    {% if (request.path != '/login') and (request.path != '/signup') %}
+        {% include "footer.html" %}
+    {% endif %}
 </body>
 
 </html>
