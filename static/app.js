@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var checkmarkElement = document.getElementById("checkmark-pasting");
             checkmarkElement.classList.remove("hide");
             checkmarkElement.classList.add("show");
-    
+
             try {
                 var webUploadSection = document.getElementById("web-upload");
                 window.scrollTo({ top: webUploadSection.offsetTop, behavior: "smooth" /* Smooth scroll behavior */ });
@@ -538,7 +538,7 @@ function getFilenameFromXhr(xhr) {
     if (disposition && (disposition.indexOf("attachment") !== -1 || disposition.indexOf("inline") !== -1)) {
         var filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
         var matches = filenameRegex.exec(disposition);
-        if (matches != null && matches[1]) { 
+        if (matches != null && matches[1]) {
             filename = matches[1].replace(/['"]/g, '');
         }
     }

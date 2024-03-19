@@ -19,10 +19,10 @@
     and limitations under the License.
 """
 
-from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template, send_file
+from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template, send_file, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, Enum
 from jinja2.exceptions import *
 from jinja2 import ChoiceLoader, FileSystemLoader
 from hashlib import sha256
@@ -44,12 +44,17 @@ from validators import url as url_valid
 from pathlib import Path
 from slugify import slugify
 from flask_cors import CORS
+from http import HTTPStatus
 from inspect import currentframe, getframeinfo
+from flask_login import UserMixin, login_required, login_user, current_user, logout_user, LoginManager
+from werkzeug.security import generate_password_hash, check_password_hash
 
 HTTP_URL_PATTERN = re.compile(r"(http[s]*://[\w.:]+)/?.*")
+EMAIL_ADDRESS_PATTERN = re.compile(r"^[\w. +-]+@[\w-]+\.[\w.-]+$")
 
 app = Flask(__name__, instance_relative_config=True)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+app.secret_key = sha256(str(time.time()).encode("utf-8")).hexdigest()
 app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     PREFERRED_URL_SCHEME = "https", # nginx users: make sure to have 'uwsgi_param UWSGI_SCHEME $scheme;' in your config
@@ -88,6 +93,7 @@ app.config.update(
     ],
     VSCAN_INTERVAL = datetime.timedelta(days=7),
     URL_ALPHABET = "DEQhd2uFteibPwq0SWBInTpA_jcZL5GKz3YCR14Ulk87Jors9vNHgfaOmMXy6Vx-",
+    REMEMBER_COOKIE_DURATION = datetime.timedelta(hours=12)
 )
 
 if not app.config["TESTING"]:
@@ -114,6 +120,10 @@ Please install python-magic.""")
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+login_manager = LoginManager()
+login_manager.login_view = 'login'
+login_manager.init_app(app)
+
 def calculate_sha256(file_path, chunk_size=4096):
     sha256_result = sha256()  # Initialize SHA-256 hash object
     # Open the file in binary mode for reading
@@ -127,13 +137,83 @@ def calculate_sha256(file_path, chunk_size=4096):
     # Return the hexadecimal representation of the hash digest
     return sha256_result.hexdigest()
 
+class User(UserMixin, db.Model):
+    __tablename__ = "User"
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.UnicodeText(255), unique = True, nullable=False)
+    fullname = db.Column(db.UnicodeText(255), default="")
+    biography = db.Column(db.UnicodeText(10000), default="")
+    email = db.Column(db.UnicodeText(255), unique = True, nullable=False)
+    password = db.Column(db.UnicodeText(255), nullable=False)
+    website = db.Column(db.UnicodeText(1000), default="")
+    location = db.Column(db.UnicodeText(255), default="")
+    visibility = db.Column(db.Integer, default=1)
+    hide_email = db.Column(db.Boolean, default=False)
+    hide_activity = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    avatar_method = db.Column(db.Boolean, default=True) # True: use custom avatar, False: lookup avatar by email address
+    avatar = db.Column(db.UnicodeText(255), default="")
+    email_verified_at = db.Column(db.DateTime, nullable=True)
+    remember_token = db.Column(db.UnicodeText(255), nullable=True)
+    is_admin = db.Column(db.Boolean, default=False)
+    is_active = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)  # Column to store creation timestamp
+    updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    
+    __table_args__ = (
+        db.CheckConstraint(visibility.in_([1, 2, 3]), name='valid_range'),
+    )
+
+    def __init__(self, username, email, password, is_admin=False, is_active=False, email_verified_at=None):
+        self.username = username
+        self.email = email
+        self.password = generate_password_hash(password)
+        self.is_admin = is_admin
+        self.is_active = is_active
+        self.email_verified_at = email_verified_at
+
+    def get_username(self):
+        return self.username
+
+    def get_email(self):
+        return self.email
+
+    def set_admin_role(self):
+        self.is_admin = True
+        self.updated_at = datetime.datetime.utcnow()
+
+    def remove_admin_role(self):
+        self.is_admin = False
+        self.updated_at = datetime.datetime.utcnow()
+
+    def activate_user(self):
+        self.is_active = True
+        self.email_verified_at = datetime.datetime.utcnow()
+        self.updated_at = datetime.datetime.utcnow()
+
+    def change_password(self, new_password):
+        self.password = generate_password_hash(new_password)
+        self.updated_at = datetime.datetime.utcnow()
+
+    def deactivate_user(self):
+        self.is_active = False
+        self.email_verified_at = None
+        self.updated_at = datetime.datetime.utcnow()
+
+    def __repr__(self):
+        return f'<User:\tusername: "{self.username}"\n\temail: "{self.email}"\n\tis_admin: {self.is_admin}\n\tis_active: {self.is_active}\n\temail_verified_at: {self.email_verified_at}\n\tcreated_at: {self.created_at}\n\tcreated_at: {self.created_at}\n\tupdated_at: {self.updated_at}>'
+
 class URL(db.Model):
     __tablename__ = "URL"
     id = db.Column(db.Integer, primary_key = True)
     url = db.Column(db.UnicodeText, unique = True)
+    # user_id = db.Column
 
     def __init__(self, url):
         self.url = url
+
+    def __repr__(self):
+        return f'<URL: link: "{self.url}">'
 
     def getname(self):
         return su.enbase(self.id)
@@ -462,6 +542,196 @@ def manage_file(f):
 
     abort(400)
 
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@login_manager.unauthorized_handler
+def unauthorized():
+    abort(HTTPStatus.UNAUTHORIZED)
+    return
+
+@app.route('/login', methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        user_info = request.form.get('user_info').strip()
+        password = request.form.get('password')
+        remember = True if request.form.get('remember') else False
+
+        if user_info == "anonymous" or user_info == "anonymous@zxz.com":
+            flash("Permission denied", 'permission-denied')
+            return redirect(url_for('login'))
+        user = User.query.filter_by(email=user_info).first()
+        if user is None:
+            user = User.query.filter_by(username=user_info).first()
+
+        # check if user actually exists
+        # take the user supplied password, hash it, and compare it to the hashed password in database
+        if user is None:
+            flash('Please check your login details', 'unregistered')
+            flash(user_info, 'user_info')
+            flash(remember, 'remember')
+            return redirect(url_for('login')) # if user doesn't exist or password is wrong, reload the page
+        if not check_password_hash(user.password, password):
+            flash('Password is incorrect. Retry again', 'incorrect-password')
+            flash(user_info, 'user_info')
+            flash(remember, 'remember')
+            return redirect(url_for('login')) # if user doesn't exist or password is wrong, reload the page
+
+        # if the above check passes, then we know the user has the right credentials
+        login_user(user, remember=remember)
+        return redirect(url_for("fhost"))
+    else:
+        if (current_user.is_authenticated):
+            return redirect(url_for("fhost"))
+        else:
+            if db.session.query(User).count() <= 1:
+                flash("", 'first-user')
+                return redirect(url_for('signup'))
+            else:
+                return render_template("login.html")
+
+@app.route('/signup', methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        username = request.form.get('username').strip()
+        email = request.form.get('email').strip()
+        password = request.form.get('password')
+
+        user_existed = False
+        if User.query.filter_by(username=username).first():
+            user_existed = True
+            flash('Username has already registered', 'username-registered')
+
+        email_existed = False
+        if User.query.filter_by(email=email).first():
+            email_existed = True
+            flash('Email address already exists', 'email-registered')
+
+        if email_existed or user_existed:
+            flash(username, 'username')
+            flash(email, 'email')
+            return redirect(url_for('signup'))
+
+        try:
+            # create new user with the form data. Hash the password so plaintext version isn't saved.
+            new_user = User(username, email, password)
+            new_user.activate_user()
+            if db.session.query(User).count() <= 1:
+                new_user.set_admin_role()
+
+            # add the new user to the database
+            db.session.add(new_user)
+            db.session.commit()
+            flash(username, 'signup-successfully')
+            return redirect(url_for('login'))
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        if (current_user.is_authenticated):
+            return redirect(url_for("fhost"))
+        else:
+            if db.session.query(User).count() <= 1:
+                flash("", 'first-user')
+            return render_template('signup.html')
+
+@app.route('/logout', methods=["GET", "POST"])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('fhost'))
+
+@app.route('/profile', methods=["GET", "POST"])
+@login_required
+def profile():
+    return render_template("profile.html")
+
+@app.route('/change-password', methods=["POST"])
+@login_required
+def change_password():
+    if request.method == "POST":
+        current_password = request.form.get('current-password')
+        new_password = request.form.get('new-password')
+        if not check_password_hash(current_user.password, current_password):
+            flash('Password is incorrect. Retry again', 'incorrect-password')
+            abort(400)
+        try:
+            # create new user with the form data. Hash the password so plaintext version isn't saved.
+            current_user.change_password(new_password)
+            # add the new user to the database
+            db.session.commit()
+            flash("Password changed successfully", 'change-password-successfully')
+            return "Password changed successfully", 200
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        abort(403)
+        
+@app.route('/delete-account', methods=["POST"])
+@login_required
+def delete_account():
+    if request.method == "POST":
+        password = request.form.get('password')
+        if not check_password_hash(current_user.password, password):
+            flash('Password is incorrect. Retry again', 'incorrect-password')
+            abort(400)
+        try:
+            user = User.query.get_or_404(current_user.id)
+            logout_user()
+            db.session.delete(user)
+            db.session.commit()
+            flash("Password changed successfully", 'change-password-successfully')
+            return "Password changed successfully", 200
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        abort(403)
+
+@app.route('/update-profile', methods=["POST"])
+@login_required
+def update_profile():
+    user = User.query.get_or_404(current_user.id)
+    if request.method == "POST":
+        username = request.form.get('username')
+        if (username is not None) and (username != "") and (username != current_user.username):
+            if User.query.filter_by(username=username).first():
+                abort(409)
+            else:
+                user.username = username[: 255 if len(username) > 255 else len(username)]
+        fullname = request.form.get('fullname')
+        if (fullname is not None):
+            user.fullname = fullname[: 255 if len(fullname) > 255 else len(fullname)]
+        biography = request.form.get('biography')
+        if (biography is not None):
+            user.biography = biography[: 10000 if len(biography) > 10000 else len(biography)]
+        website = request.form.get('website')
+        if (website is not None):
+            user.website = website[: 1000 if len(website) > 1000 else len(website)]
+        location = request.form.get('location')
+        if (location is not None):
+            user.location = location[: 255 if len(location) > 255 else len(location)]
+        visibility = request.form.get('visibility')
+        if (visibility is not None):
+            user.visibility = int(visibility)
+
+        hide_email = request.form.get('hide-email')
+        user.hide_email = hide_email is not None
+        hide_activity = request.form.get('hide-activity')
+        user.hide_activity = hide_activity is not None
+        user.updated_at = datetime.datetime.utcnow()
+        db.session.commit()
+        try:
+            return "Update profile successfully", 200
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        abort(403)
+
+
 @app.route("/<path:path>", methods=["GET", "POST"])
 @app.route("/s/<secret>/<path:path>", methods=["GET", "POST"])
 def get(path, secret=None):
@@ -474,7 +744,6 @@ def get(path, secret=None):
             abort(404)
 
         id = su.debase(name)
-
         if sufs:
             f = File.query.get(id)
 
@@ -511,7 +780,6 @@ def get(path, secret=None):
                 abort(404)
 
             u = URL.query.get(id)
-
             if u:
                 return redirect(u.url)
 
@@ -624,7 +892,6 @@ def fetch_file():
             print(e)
             return jsonify({"error": str(e)}), 500
 
-
 @app.route("/robots.txt")
 def robots():
     return """User-agent: *
@@ -633,12 +900,15 @@ Disallow: /
 
 @app.errorhandler(400)
 @app.errorhandler(401)
+@app.errorhandler(403)
 @app.errorhandler(404)
+@app.errorhandler(409)
 @app.errorhandler(411)
 @app.errorhandler(413)
 @app.errorhandler(414)
 @app.errorhandler(415)
 @app.errorhandler(451)
+@app.errorhandler(500)
 def ehandler(e):
     try:
         return render_template(f"{e.code}.html", id=id, request=request), e.code

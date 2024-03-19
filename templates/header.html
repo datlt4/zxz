@@ -1,8 +1,56 @@
 <header class="navbar navbar-expand-md navbar-dark bd-navbar bg-dark header">
-    <nav class="container-xxxl flex-md-nowrap" aria-label="Main navigation">
+    <nav class="container-xxl flex-md-nowrap" aria-label="Main navigation">
         <a class="navbar-brand d-flex align-items-center" href="{{ url_for('fhost', _external=True).rstrip('/') }}">
-            <img src="{{ url_for('static', filename='favicon.ico') }}" width="50" height="50" class="d-inline-block align-top" alt="ZXZ Logo" style="margin-left: 20px;">
-            <span class="mx-auto" style="padding-left: 10px;">ZXZ</span>
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.0" height="26" viewBox="0 0 1303.000000 503.000000" preserveAspectRatio="xMidYMid meet"  fill="#d5d4df" data-darkreader-inline-fill="" style="--darkreader-inline-fill: #0054cc; padding-left: 12px;">
+                <g transform="translate(0.000000,503.000000) scale(0.100000,-0.100000)" fill="#d5d4df" stroke="none">
+                    <path d="M1167 4948 c20 -263 79 -1124 77 -1127 -1 -1 -220 143 -486 321 -266 178 -487 327 -493 330 -9 5 -235 -364 -243 -396 -1 -6 236 -130 528 -276 291 -146 530 -267 530 -270 0 -3 -239 -122 -530 -265 -292 -143 -530 -263 -530 -266 0 -21 211 -394 222 -393 7 1 233 144 502 318 269 174 490 315 492 314 3 -4 -60 -1022 -70 -1130 l-6 -58 250 0 c232 0 250 1 250 18 0 9 -18 276 -40 592 -21 316 -37 576 -36 578 2 1 219 -140 482 -314 263 -174 483 -318 490 -321 14 -5 247 398 236 408 -4 4 -239 118 -522 254 -283 136 -519 251 -524 256 -6 5 48 36 135 78 79 38 320 156 536 263 l392 194 -120 210 c-65 115 -125 208 -132 208 -6 -1 -230 -148 -496 -328 -266 -180 -484 -326 -485 -324 -1 2 17 260 40 573 24 314 43 580 43 593 l1 22 -249 0 -249 0 5 -62z"/>
+                    <path d="M10320 4545 l0 -75 238 -2 237 -3 3 -2117 2 -2118 -240 0 -240 0 0 -80 0 -80 555 0 555 0 0 80 0 80 -240 0 -240 0 0 2195 0 2195 -315 0 -315 0 0 -75z"/>
+                    <path d="M11910 4545 l0 -75 238 -2 237 -3 3 -2117 2 -2118 -240 0 -240 0 0 -80 0 -80 555 0 555 0 0 80 0 80 -240 0 -240 0 0 2195 0 2195 -315 0 -315 0 0 -75z"/>
+                    <path d="M5230 3280 c-286 -25 -500 -119 -688 -304 -98 -95 -157 -175 -222 -298 l-48 -90 -6 138 c-3 77 -9 221 -12 322 l-6 182 -304 0 -304 0 0 -80 0 -80 240 0 240 0 0 -1420 0 -1420 -240 0 -240 0 0 -80 0 -80 555 0 555 0 0 80 0 80 -240 0 -240 0 0 906 0 906 25 122 c55 274 160 498 310 666 75 83 144 137 242 188 243 125 613 148 860 53 169 -66 317 -201 396 -363 53 -107 78 -189 109 -349 21 -111 21 -136 25 -1121 l4 -1008 -235 0 -236 0 0 -80 0 -80 550 0 550 0 0 80 0 80 -234 0 -235 0 -3 978 c-4 872 -6 990 -22 1102 -74 519 -274 808 -641 923 -136 42 -341 62 -505 47z"/>
+                    <path d="M6740 3150 l0 -80 210 0 209 0 4 -982 c4 -1068 3 -1044 62 -1279 80 -318 229 -536 459 -671 264 -155 690 -171 1030 -36 212 83 409 249 522 441 l51 86 6 -77 c4 -42 9 -168 13 -279 l7 -203 303 0 304 0 0 80 0 80 -240 0 -240 0 0 1500 0 1500 -315 0 -315 0 0 -80 0 -80 240 0 240 0 0 -1004 0 -1003 -24 -96 c-53 -206 -137 -366 -266 -501 -199 -209 -431 -295 -795 -296 -244 0 -408 59 -561 203 -170 159 -260 362 -310 697 -15 101 -18 240 -21 1138 l-4 1022 -285 0 -284 0 0 -80z"/>
+                </g>
+            </svg>
         </a>
+
+        {% if current_user.is_authenticated %}
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <div class="btn-group" role="group" aria-label="log in and sign up group button">
+                    <button type="button" class="btn btn-outline-light nav-btn activate" onclick="window.location.href='{{ url_for('fhost') }}'">Home</button>
+                    <button type="button" class="btn btn-outline-light nav-btn">Dashboard</button>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if current_user.is_authenticated %}
+            <div class="user-avatar-container d-flex align-items-center">
+                <span class="username">{{ current_user.username }}</span>
+                <div class="avatar avatar-sm" id="avatar"><i class="bi bi-person"></i></div>
+                <div class="btn-group-vertical user-profile popup-profile" id="popup-user-profile">
+                    <button id="profile-btn" type="button" class="btn btn-light user-profile-btn" onclick="window.location.href='{{ url_for('profile') }}'"><i class="bi bi-person-gear user-profile-icon"></i>Profile</button>
+                    <button id="dashboard-btn" type="button" class="btn btn-light user-profile-btn" onclick="window.location.href='#'"><i class="bi bi-bar-chart user-profile-icon"></i>Dashboard</button>
+                    <button id="logout-btn" type="button" class="btn btn-light user-profile-btn" onclick="window.location.href='{{ url_for('logout') }}'"><i class="bi bi-box-arrow-right user-profile-icon"></i>Logout</button>
+                </div>
+            </div>
+        {% else %}
+        <div class="user-avatar-container d-flex align-items-center">
+            {% if request.path == '/login' %}
+                <span style="color: #d9d9d9;">Don't have an account?</span>
+            {% endif %}
+            {% if request.path == '/signup' %}
+                <span style="color: #d9d9d9;">Already have an account?</span>
+            {% endif %}
+
+            <div class="btn-group" role="group" aria-label="log in and sign up group button" style="margin-left: 10px;">
+                {% if request.path != '/login' %}
+                    <button id="login-btn" type="button" class="btn btn-light" onclick="window.location.href='{{ url_for('login') }}'">Log in</button>
+                {% endif %}
+                {% if request.path != '/signup' %}
+                    <button id="signup-btn" type="button" class="btn btn-primary custom-btn" onclick="window.location.href='{{ url_for('signup') }}'">Sign up</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </nav>
 </header>
+
+<script src="{{ url_for('static', filename='header.js') }}"></script>

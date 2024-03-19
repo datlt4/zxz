@@ -11,7 +11,7 @@ This is a no-bullshit file hosting service that also runs
 Configuration
 -------------
 
-To change settings, copy ``config.py.example`` to ``instance/config.py`` and modify to your liking. 
+To change settings, copy ``config.py.example`` to ``instance/config.py`` and modify to your liking.
 For more information on instance configuration, see `the Flask documentation <https://flask.palletsprojects.com/en/2.0.x/config/#instance-folders>`_.
 
 To customize the home and error pages, create a ``templates`` directory
@@ -90,7 +90,7 @@ Optional:
     reduce the bandwidth requirements for graphics.
 
 Docker Build & Run
------------------- 
+------------------
 block::
 
     docker build . -t 0x1a:latest
@@ -225,7 +225,7 @@ group.
      sudo apt install -y libmagic-dev
      sudo apt clean
      ```
-    
+
   - Install python dependencies
 
      ```bash
@@ -243,6 +243,14 @@ group.
      flask run -h 0.0.0.0
 
      # flask run -h 0.0.0.0 [-p 8003] [--debug] [--cert=adhoc]
+     ```
+  
+  - Create migration
+    
+     ```bash
+     export FLASK_APP=fhost
+     export FLASK_ENV=production
+     flask db migrate -m "Create user table"
      ```
 
 ## Install in docker

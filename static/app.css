@@ -32,7 +32,8 @@
 /* Ensure content is pushed down when header and footer are fixed */
 body {
     padding-top: 60px;
-    font-family: Arial, sans-serif;
+    font-family: 'Trebuchet MS', sans-serif;
+    /* font-family: Copperplate, Papyrus, fantasy; */
     line-height: 1.6;
     display: flex;
     flex-direction: column;
@@ -44,8 +45,21 @@ input:disabled {
     background-color: #f8f9fa !important;
 }
 
+input:hover {
+    border-color: #0250b7    !important;
+}
+
+hr {
+    margin-top: 27px;
+    padding-bottom: 11px;
+}
+
 .input-group-text {
     border-color: #d2d3d5 !important;
+}
+
+.input-group-text:hover {
+    background-color: #dedfe0 !important;
 }
 
 /* Add some margin to the bottom of the body content */
@@ -62,6 +76,11 @@ input:disabled {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
+}
+
+.row {
+    margin-right: 0;
+    margin-left: 0;
 }
 
 h2 {
@@ -145,4 +164,240 @@ li:before {
 
 .CodeMirror {
     font-size: 11px; /* Adjust the font size as needed */
+}
+
+.nav-btn {
+    padding-left: 1.5em;
+    padding-right: 1.5em;
+    border-color: transparent;
+}
+
+.nav-btn:hover {
+    background-color: #4c5257;
+    color: #d2d3d5;
+    border-color: #4c5257;
+    transition: opacity 0.9s ease;
+}
+
+.avatar {
+    border-radius: 50%;
+    background-color: #e9e9e9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+
+.avatar-sm {
+    width: 30px;
+    height: 30px;
+}
+
+.avatar-md {
+    width: 70px;
+    height: 70px;
+}
+
+.avatar:hover {
+    background-color: #a6a2a2;
+    color: #e9e9e9;
+    opacity: 0.5;
+}
+
+.avatar.active {
+    background-color: #9f9e9e;
+}
+
+.username {
+    font-weight: bold;
+    text-transform: uppercase;
+    padding-right: 7px;
+    color: #dedbdb;
+}
+
+.bi-person {
+    font-size: 18px; /* Adjust icon size as needed */
+}
+
+/* Popup container - can be anything you want */
+.user-avatar-container {
+    position: relative;
+}
+/* The actual popup */
+.popup-profile {
+    visibility: hidden;
+    width: 160px;
+    background-color: #373b3e;
+    color: #ffffff;
+    border-radius: 8px;
+    position: absolute;
+    z-index: 1;
+    top: 154%;
+    left: 12%;
+    transform: translateX(-50%);
+}
+
+/* Popup arrow */
+.popup-profile::after {
+    content: "";
+    position: absolute;
+    /* top: 100%; */
+    top: -5px;
+    left: 90%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #373b3e transparent #373b3e transparent;
+}
+
+/* Toggle this class - hide and show the popup */
+.show {
+    visibility: visible;
+    -webkit-animation: fadeIn 0.5s;
+    animation: fadeIn 0.5s;
+}
+
+.user-profile-icon {
+    padding-right: 8px;
+}
+
+.user-profile-btn {
+    background-color: #373b3e;
+    align-items: center; /* Center items vertically */
+    text-align: left;
+    color: #ffffff;
+    border-color: transparent;
+    padding: 8px 16px;
+}
+
+.user-profile-btn:hover {
+    background-color: #444444;
+    color: #eeeeee;
+}
+
+/* Add animation (fade in the popup) */
+@-webkit-keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+    from {opacity: 0;}
+    to {opacity:1 ;}
+}
+
+.accordion-button {
+    font-size: large;
+    font-weight: bold;
+}
+
+.accordion-body-header {
+    font-size: large;
+    font-weight: bold;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: #1e4174;
+}
+
+.hr-split-accordion-body-header {
+    margin-bottom: -8px;
+    margin-top: 16px;
+}
+
+select.form-select {
+    height: 48px;
+    padding: 10px;
+    font-size: inherit;
+}
+
+input.form-control {
+    height: 48px;
+    padding: 10px;
+    font-size: inherit;
+}
+
+/* Customize the button styles */
+.btn-outline-primary.custom-btn {
+    color: #3b5482; /* Text color */
+    border-color: #3b5482; /* Border color */
+}
+
+.btn-outline-primary.custom-btn:hover {
+    color: #fff; /* Text color on hover */
+    background-color: #3b5482; /* Background color on hover */
+    border-color: #3b5482; /* Border color on hover */
+}
+
+.btn-outline-primary.custom-btn {
+    color: #3b5482; /* Text color */
+    border-color: #3b5482; /* Border color */
+}
+
+.btn-outline-primary.custom-btn:hover {
+    color: #fff; /* Text color on hover */
+    background-color: #3b5482; /* Background color on hover */
+    border-color: #3b5482; /* Border color on hover */
+}
+
+.btn-primary.custom-btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5); /* Custom focus shadow */
+}
+
+.btn-primary.custom-btn {
+    background-color: #3b5482; /* Background color */
+    border-color: #3b5482; /* Border color */
+}
+
+.btn-primary.custom-btn:hover {
+    background-color: #2a3e5f; /* Darker background color on hover */
+    border-color: #2a3e5f; /* Darker border color on hover */
+}
+
+.btn-primary.custom-btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5); /* Custom focus shadow */
+}
+
+.toast-header.danger {
+    background-color: #a94442;
+    color: #f6ecec;
+}
+
+.toast-body.danger {
+    background-color: #ba6968;
+    color: #f6ecec;
+    border-radius: 0 0 5px 5px;
+}
+
+.toast-header.success {
+    background-color: #3c763d;
+    color: #ecf1ec;
+}
+
+.toast-body.success {
+    background-color: #639164;
+    color: #ecf1ec;
+    border-radius: 0 0 5px 5px;
+}
+
+.toast-header.info {
+    background-color: #31708f;
+    color: #d6e2e9;
+}
+
+.toast-body.info {
+    background-color: #5a8da5;
+    color: #d6e2e9;
+    border-radius: 0 0 5px 5px;
+}
+
+.toast-header.warning {
+    background-color: #a37935;
+    color: #ede4d7;
+}
+
+.toast-body.warning {
+    background-color: #b5945d;
+    color: #e8e2d8;
+    border-radius: 0 0 5px 5px;
 }
