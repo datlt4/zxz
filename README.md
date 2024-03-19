@@ -244,6 +244,14 @@ group.
 
      # flask run -h 0.0.0.0 [-p 8003] [--debug] [--cert=adhoc]
      ```
+  
+  - Create migration
+    
+     ```bash
+     export FLASK_APP=fhost
+     export FLASK_ENV=production
+     flask db migrate -m "Create user table"
+     ```
 
 ## Install in docker
 

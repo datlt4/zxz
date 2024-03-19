@@ -26,8 +26,8 @@
                 <span class="username">{{ current_user.username }}</span>
                 <div class="avatar avatar-sm" id="avatar"><i class="bi bi-person"></i></div>
                 <div class="btn-group-vertical user-profile popup-profile" id="popup-user-profile">
-                    <button id="profile-btn" type="button" class="btn btn-light user-profile-btn" onclick="#"><i class="bi bi-person-gear user-profile-icon"></i>Profile</button>
-                    <button id="dashboard-btn" type="button" class="btn btn-light user-profile-btn" onclick="#"><i class="bi bi-bar-chart user-profile-icon"></i>Dashboard</button>
+                    <button id="profile-btn" type="button" class="btn btn-light user-profile-btn" onclick="window.location.href='{{ url_for('profile') }}'"><i class="bi bi-person-gear user-profile-icon"></i>Profile</button>
+                    <button id="dashboard-btn" type="button" class="btn btn-light user-profile-btn" onclick="window.location.href='#'"><i class="bi bi-bar-chart user-profile-icon"></i>Dashboard</button>
                     <button id="logout-btn" type="button" class="btn btn-light user-profile-btn" onclick="window.location.href='{{ url_for('logout') }}'"><i class="bi bi-box-arrow-right user-profile-icon"></i>Logout</button>
                 </div>
             </div>
@@ -45,10 +45,12 @@
                     <button id="login-btn" type="button" class="btn btn-light" onclick="window.location.href='{{ url_for('login') }}'">Log in</button>
                 {% endif %}
                 {% if request.path != '/signup' %}
-                    <button id="signup-btn" type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('signup') }}'">Sign up</button>
+                    <button id="signup-btn" type="button" class="btn btn-primary custom-btn" onclick="window.location.href='{{ url_for('signup') }}'">Sign up</button>
                 {% endif %}
             </div>
         </div>
         {% endif %}
     </nav>
 </header>
+
+<script src="{{ url_for('static', filename='header.js') }}"></script>

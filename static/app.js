@@ -32,15 +32,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
 
-    // const avatar = document.getElementById('avatar');
-    const avatar = document.getElementById('avatar');
-    if (avatar) {
-        avatar.addEventListener('click', function() {
-            avatar.classList.toggle('active');
-            document.getElementById("popup-user-profile").classList.toggle("show");
-        });
-    }
-
     window.addEventListener("paste", event => {
         var isTextInput = event.target.tagName.toLowerCase() === 'input' || event.target.tagName.toLowerCase() === 'textarea';
         var isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);

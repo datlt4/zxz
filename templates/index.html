@@ -53,6 +53,7 @@
             </p>
         </div>
     </div>
+    {% include "toast-template.html" %}
 </div>
 <div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="terms-of-service">
@@ -124,7 +125,7 @@
                     <input type="hidden" class="form-control" id="expires" name="expires" disabled>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
-                    <button id="submit-btn" type="button" class="btn btn-primary" onclick="submitForm()">Submit</button>
+                    <button id="submit-btn" type="button" class="btn btn-primary custom-btn" onclick="submitForm()">Submit</button>
                     <div id="checkmark-submit" class="checkmark hide" style="padding-top: 3px">
                         <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
                             <g transform="">
@@ -167,7 +168,7 @@
                     <div id="shorten-feedback" class="invalid-feedback">Please enter an URL.</div>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
-                    <button id="submit-shorten-url-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitShortenUrl()">Submit</button>
+                    <button id="submit-shorten-url-btn" type="button" class="btn btn-primary custom-btn" style="margin-right: 10px;" onclick="submitShortenUrl()">Submit</button>
                     <div id="checkmark-submit-shorten-url" class="checkmark hide" style="padding-top: 3px">
                         <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
                             <g transform="">
@@ -205,7 +206,7 @@
         <div class="col-md-12 indented-content">
             <div class="input-group mb-3">
                 <input type="text" id="download-url" class="form-control" placeholder="Download link" aria-label="Download link" aria-describedby="get-data-from-url">
-                <button class="btn btn-outline-primary" type="button" id="get-data-from-url">Download</button>
+                <button class="btn btn-outline-primary custom-btn" type="button" id="get-data-from-url">Download</button>
             </div>
             <div id="download-from-url-feedback" class="invalid-feedback">Please enter an valid URL.</div>
             <form id="scriptForm" enctype="multipart/form-data">
@@ -228,7 +229,7 @@
                     <div id="script-feedback" class="invalid-feedback hide">Please enter an your script.</div>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
-                    <button id="submit-script-btn" type="button" class="btn btn-primary" style="margin-right: 10px;" onclick="submitScript()">Submit</button>
+                    <button id="submit-script-btn" type="button" class="btn btn-primary custom-btn" style="margin-right: 10px;" onclick="submitScript()">Submit</button>
                     <div id="checkmark-submit-script" class="checkmark hide" style="padding-top: 3px">
                         <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
                             <g transform="">
@@ -292,6 +293,7 @@
     </div>
 </div>
 
+</div>
 <!-- Bootstrap JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.min.js"></script>
 <!-- Bootstrap Chart JS -->

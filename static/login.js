@@ -18,6 +18,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("username-login-feedback").style.display = "block";
         document.getElementById("username-login").classList.add("is-invalid"); // Apply 'is-invalid' class
         document.getElementById("username-login").focus();
+        insertMessageIntoToast("Unregistered User", "Username or email address is not registered. Register and log in again.", "danger");
     }
 
     if (document.getElementById('flash-message-incorrect-password')) {
@@ -25,6 +26,7 @@ document.addEventListener("DOMContentLoaded", function() {
         document.getElementById("password-login-feedback").style.display = "block";
         document.getElementById("password-login").classList.add("is-invalid"); // Apply 'is-invalid' class
         document.getElementById("password-login").focus();
+        insertMessageIntoToast("Incorrect Password", "Try to remember the passwordsignin and retry again", "danger");
     }
 
     var flashMessageRemember = document.getElementById('flash-message-remember')
@@ -37,25 +39,25 @@ document.addEventListener("DOMContentLoaded", function() {
     if (flashMessageSignupSuccessfully) {
         document.getElementById("username-login").value = flashMessageSignupSuccessfully.dataset.message;
         document.getElementById("password-login").focus();
-        document.getElementById('success-toast').classList.add("show");
+        insertMessageIntoToast("Success", "Thank you for registering! Please activate your account via email before logging in.", "success");
     }
 
     var flashMessagePermissionDenied = document.getElementById('flash-message-permission-denied')
     if (flashMessagePermissionDenied) {
         document.getElementById("username-login").focus();
-        document.getElementById('perimission-denied-toast').classList.add("show");
+        insertMessageIntoToast("Permission Denied", "Cannot log in anonymous account", "danger");
     }
 
-    // Hide the toast when the close button is clicked
-    document.getElementById("close-success-toast").addEventListener('click', function() {
-        document.getElementById('success-toast').classList.remove("show");
+    var passwordLoginInputGroups = document.querySelectorAll(".password-with-eye");
+    passwordLoginInputGroups.forEach(function(passwordLoginInputGroup) {
+        var passwordLoginInput = passwordLoginInputGroup.querySelector(".form-control");
+        var showPasswordLogin = passwordLoginInputGroup.querySelector(".input-group-text");
+        showPasswordLogin.addEventListener('click', function() {
+            var type = passwordLoginInput.getAttribute('type') === 'password' ? 'input' : 'password';
+            passwordLoginInput.setAttribute('type', type);
+            showPasswordLogin.querySelector(".bi").className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+        });
     });
-    setTimeout(function() {document.getElementById('success-toast').classList.remove("show");}, 6660);
-
-    document.getElementById("close-perimission-denied-toast").addEventListener('click', function() {
-        document.getElementById('perimission-denied-toast').classList.remove("show");
-    });
-    setTimeout(function() {document.getElementById('perimission-denied-toast').classList.remove("show");}, 6660);
 });
 
 function validateField(input_id, message="") {

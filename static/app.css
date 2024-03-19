@@ -286,3 +286,118 @@ li:before {
     from {opacity: 0;}
     to {opacity:1 ;}
 }
+
+.accordion-button {
+    font-size: large;
+    font-weight: bold;
+}
+
+.accordion-body-header {
+    font-size: large;
+    font-weight: bold;
+    margin-top: 30px;
+    margin-bottom: 10px;
+    color: #1e4174;
+}
+
+.hr-split-accordion-body-header {
+    margin-bottom: -8px;
+    margin-top: 16px;
+}
+
+select.form-select {
+    height: 48px;
+    padding: 10px;
+    font-size: inherit;
+}
+
+input.form-control {
+    height: 48px;
+    padding: 10px;
+    font-size: inherit;
+}
+
+/* Customize the button styles */
+.btn-outline-primary.custom-btn {
+    color: #3b5482; /* Text color */
+    border-color: #3b5482; /* Border color */
+}
+
+.btn-outline-primary.custom-btn:hover {
+    color: #fff; /* Text color on hover */
+    background-color: #3b5482; /* Background color on hover */
+    border-color: #3b5482; /* Border color on hover */
+}
+
+.btn-outline-primary.custom-btn {
+    color: #3b5482; /* Text color */
+    border-color: #3b5482; /* Border color */
+}
+
+.btn-outline-primary.custom-btn:hover {
+    color: #fff; /* Text color on hover */
+    background-color: #3b5482; /* Background color on hover */
+    border-color: #3b5482; /* Border color on hover */
+}
+
+.btn-primary.custom-btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5); /* Custom focus shadow */
+}
+
+.btn-primary.custom-btn {
+    background-color: #3b5482; /* Background color */
+    border-color: #3b5482; /* Border color */
+}
+
+.btn-primary.custom-btn:hover {
+    background-color: #2a3e5f; /* Darker background color on hover */
+    border-color: #2a3e5f; /* Darker border color on hover */
+}
+
+.btn-primary.custom-btn:focus {
+    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5); /* Custom focus shadow */
+}
+
+.toast-header.danger {
+    background-color: #a94442;
+    color: #f6ecec;
+}
+
+.toast-body.danger {
+    background-color: #ba6968;
+    color: #f6ecec;
+    border-radius: 0 0 5px 5px;
+}
+
+.toast-header.success {
+    background-color: #3c763d;
+    color: #ecf1ec;
+}
+
+.toast-body.success {
+    background-color: #639164;
+    color: #ecf1ec;
+    border-radius: 0 0 5px 5px;
+}
+
+.toast-header.info {
+    background-color: #31708f;
+    color: #d6e2e9;
+}
+
+.toast-body.info {
+    background-color: #5a8da5;
+    color: #d6e2e9;
+    border-radius: 0 0 5px 5px;
+}
+
+.toast-header.warning {
+    background-color: #a37935;
+    color: #ede4d7;
+}
+
+.toast-body.warning {
+    background-color: #b5945d;
+    color: #e8e2d8;
+    border-radius: 0 0 5px 5px;
+}

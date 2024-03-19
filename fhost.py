@@ -22,7 +22,7 @@
 from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template, send_file, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, Enum
 from jinja2.exceptions import *
 from jinja2 import ChoiceLoader, FileSystemLoader
 from hashlib import sha256
@@ -141,14 +141,28 @@ class User(UserMixin, db.Model):
     __tablename__ = "User"
     id = db.Column(db.Integer, primary_key = True)
     username = db.Column(db.UnicodeText(255), unique = True, nullable=False)
+    fullname = db.Column(db.UnicodeText(255), default="")
+    biography = db.Column(db.UnicodeText(10000), default="")
     email = db.Column(db.UnicodeText(255), unique = True, nullable=False)
     password = db.Column(db.UnicodeText(255), nullable=False)
+    website = db.Column(db.UnicodeText(1000), default="")
+    location = db.Column(db.UnicodeText(255), default="")
+    visibility = db.Column(db.Integer, default=1)
+    hide_email = db.Column(db.Boolean, default=False)
+    hide_activity = db.Column(db.Boolean, default=False)
+    is_admin = db.Column(db.Boolean, default=False)
+    avatar_method = db.Column(db.Boolean, default=True) # True: use custom avatar, False: lookup avatar by email address
+    avatar = db.Column(db.UnicodeText(255), default="")
     email_verified_at = db.Column(db.DateTime, nullable=True)
     remember_token = db.Column(db.UnicodeText(255), nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)  # Column to store creation timestamp
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    
+    __table_args__ = (
+        db.CheckConstraint(visibility.in_([1, 2, 3]), name='valid_range'),
+    )
 
     def __init__(self, username, email, password, is_admin=False, is_active=False, email_verified_at=None):
         self.username = username
@@ -166,17 +180,25 @@ class User(UserMixin, db.Model):
 
     def set_admin_role(self):
         self.is_admin = True
+        self.updated_at = datetime.datetime.utcnow()
 
     def remove_admin_role(self):
         self.is_admin = False
+        self.updated_at = datetime.datetime.utcnow()
 
     def activate_user(self):
         self.is_active = True
         self.email_verified_at = datetime.datetime.utcnow()
+        self.updated_at = datetime.datetime.utcnow()
+
+    def change_password(self, new_password):
+        self.password = generate_password_hash(new_password)
+        self.updated_at = datetime.datetime.utcnow()
 
     def deactivate_user(self):
         self.is_active = False
         self.email_verified_at = None
+        self.updated_at = datetime.datetime.utcnow()
 
     def __repr__(self):
         return f'<User:\tusername: "{self.username}"\n\temail: "{self.email}"\n\tis_admin: {self.is_admin}\n\tis_active: {self.is_active}\n\temail_verified_at: {self.email_verified_at}\n\tcreated_at: {self.created_at}\n\tcreated_at: {self.created_at}\n\tupdated_at: {self.updated_at}>'
@@ -623,7 +645,92 @@ def logout():
 @app.route('/profile', methods=["GET", "POST"])
 @login_required
 def profile():
-    return 'Profile'
+    return render_template("profile.html")
+
+@app.route('/change-password', methods=["POST"])
+@login_required
+def change_password():
+    if request.method == "POST":
+        current_password = request.form.get('current-password')
+        new_password = request.form.get('new-password')
+        if not check_password_hash(current_user.password, current_password):
+            flash('Password is incorrect. Retry again', 'incorrect-password')
+            abort(400)
+        try:
+            # create new user with the form data. Hash the password so plaintext version isn't saved.
+            current_user.change_password(new_password)
+            # add the new user to the database
+            db.session.commit()
+            flash("Password changed successfully", 'change-password-successfully')
+            return "Password changed successfully", 200
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        abort(403)
+        
+@app.route('/delete-account', methods=["POST"])
+@login_required
+def delete_account():
+    if request.method == "POST":
+        password = request.form.get('password')
+        if not check_password_hash(current_user.password, password):
+            flash('Password is incorrect. Retry again', 'incorrect-password')
+            abort(400)
+        try:
+            user = User.query.get_or_404(current_user.id)
+            logout_user()
+            db.session.delete(user)
+            db.session.commit()
+            flash("Password changed successfully", 'change-password-successfully')
+            return "Password changed successfully", 200
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        abort(403)
+
+@app.route('/update-profile', methods=["POST"])
+@login_required
+def update_profile():
+    user = User.query.get_or_404(current_user.id)
+    if request.method == "POST":
+        username = request.form.get('username')
+        if (username is not None) and (username != "") and (username != current_user.username):
+            if User.query.filter_by(username=username).first():
+                abort(409)
+            else:
+                user.username = username[: 255 if len(username) > 255 else len(username)]
+        fullname = request.form.get('fullname')
+        if (fullname is not None):
+            user.fullname = fullname[: 255 if len(fullname) > 255 else len(fullname)]
+        biography = request.form.get('biography')
+        if (biography is not None):
+            user.biography = biography[: 10000 if len(biography) > 10000 else len(biography)]
+        website = request.form.get('website')
+        if (website is not None):
+            user.website = website[: 1000 if len(website) > 1000 else len(website)]
+        location = request.form.get('location')
+        if (location is not None):
+            user.location = location[: 255 if len(location) > 255 else len(location)]
+        visibility = request.form.get('visibility')
+        if (visibility is not None):
+            user.visibility = int(visibility)
+
+        hide_email = request.form.get('hide-email')
+        user.hide_email = hide_email is not None
+        hide_activity = request.form.get('hide-activity')
+        user.hide_activity = hide_activity is not None
+        user.updated_at = datetime.datetime.utcnow()
+        db.session.commit()
+        try:
+            return "Update profile successfully", 200
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        abort(403)
+
 
 @app.route("/<path:path>", methods=["GET", "POST"])
 @app.route("/s/<secret>/<path:path>", methods=["GET", "POST"])
@@ -793,7 +900,9 @@ Disallow: /
 
 @app.errorhandler(400)
 @app.errorhandler(401)
+@app.errorhandler(403)
 @app.errorhandler(404)
+@app.errorhandler(409)
 @app.errorhandler(411)
 @app.errorhandler(413)
 @app.errorhandler(414)
