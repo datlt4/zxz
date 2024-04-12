@@ -35,7 +35,6 @@ document.addEventListener("DOMContentLoaded", function() {
             // Check which radio button is selected
             if (radioButton.checked) {
                 // Perform actions based on the selected radio button
-                console.log(document.getElementById("avatar"));
                 if (radioButton.id === 'method-archive-avatar-1') {
                     // Look Up Avatar by Email Address
                     document.getElementById("gavatar-input").disabled = false;
@@ -166,10 +165,12 @@ function validateField(input_id, message="", f = (input) => { return input.value
     //input.value = input.value.trim();
     if (f(input)) {
         input.classList.remove("is-invalid"); // Remove 'is-invalid' class
+        input.classList.add("is_valid");
         feedback.style.display = "none";
         return true;
     } else {
         input.classList.add("is-invalid"); // Apply 'is-invalid' class
+        input.classList.remove("is_valid");
         feedback.style.display = "block";
         if (message !== "") {
             feedback.querySelector("#feedback-text").textContent = message;

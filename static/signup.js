@@ -8,13 +8,89 @@ document.addEventListener("DOMContentLoaded", function () {
     username_input.addEventListener("blur", function (event) {
         if (validateField("username-signup", "Please enter new username.")) {
             username_input.value = slugify(username_input.value);
+
+            let v1 = checkFieldExist("username-signup", "/check-username", "username", (input, feedback) => {
+                // If the response is not successful, handle the error here
+                input.classList.add("is-invalid"); // Apply 'is-invalid' class
+                input.classList.remove("is-valid");
+                feedback.querySelector("#feedback-text").textContent = "Username has already registered";
+                feedback.style.display = "block";
+                insertMessageIntoToast("Username check failed", "Username has already registered", "danger")
+            },  (input, feedback) => {
+                // If the response is successful, handle it here
+                input.classList.remove("is-invalid"); // Apply 'is-invalid' class
+                input.classList.add("is-valid");
+                feedback.style.display = "none";
+            });
+
+            console.log(v1)
+            //let formData = new FormData();
+            //let input = document.getElementById("username-signup");
+            //let feedback = document.getElementById("username-signup-feedback");
+            //formData.append("username", input.value);
+            //fetch("/check-username", {method: "POST", body: formData})
+            //    .then(response => {
+            //        if (response.ok) {
+            //            // If the response is not successful, handle the error here
+            //            input.classList.add("is-invalid"); // Apply 'is-invalid' class
+            //            input.classList.remove("is-valid");
+            //            feedback.querySelector("#feedback-text").textContent = "Username has already registered";
+            //            feedback.style.display = "block";
+            //            insertMessageIntoToast("Username check failed", "Username has already registered", "danger")
+            //        } else {
+            //            // If the response is successful, handle it here
+            //            input.classList.remove("is-invalid"); // Apply 'is-invalid' class
+            //            input.classList.add("is-valid");
+            //            feedback.style.display = "none";
+            //        }
+            //    })
+            //    .catch(error => {
+            //        // Handle any network errors here
+            //        insertMessageIntoToast("Network error", error, "danger")
+            //    });
+
         }
     });
 
     document.getElementById("email-signup").addEventListener("blur", function (event) {
-        validateField("email-signup", "Please enter a valid email address.", (input) => {
-            return ((input.value.length > 0) && (/^[\w. +-]+@[\w-]+\.[\w.-]+$/.test(input.value))) ? true : false;
+        let v1 = validateField("email-signup", "Please enter your email address.", (input) => {
+            return (input.value.length > 0) ? true : false;
         });
+        if (!v1) return;
+
+        let v2 = validateField("email-signup", "Please enter valid email address.", (input) => {
+            return (/^[\w. +-]+@[\w-]+\.[\w.-]+$/.test(input.value)) ? true : false;
+        });
+        if (!v2) return;
+
+        let formData = new FormData()
+        let input = document.getElementById("email-signup");
+        let feedback = document.getElementById("email-signup-feedback");
+        formData.append("email", input.value)
+        if (v1 && v2){
+            fetch("/check-email", {method: "POST", body: formData})
+                .then(response => {
+                    if (response.ok) {
+                        // If the response is not successful, handle the error here
+                        input.classList.add("is-invalid"); // Apply 'is-invalid' class
+                        input.classList.remove("is-valid");
+                        feedback.querySelector("#feedback-text").textContent = "Email address has already registered";
+                        feedback.style.display = "block";
+                        insertMessageIntoToast("Email check failed", "Email address has already registered", "danger")
+                    } else {
+                        // If the response is successful, handle it here
+                        input.classList.remove("is-invalid"); // Apply 'is-invalid' class
+                        input.classList.add("is-valid");
+                        feedback.style.display = "none";
+                    }
+                })
+                .catch(error => {
+                    // Handle any network errors here
+                    insertMessageIntoToast("Network error", error, "danger")
+                })
+        } else {
+            return;
+        }
     });
 
     document.getElementById("password-signup").addEventListener("blur", function (event) {
@@ -71,6 +147,21 @@ document.addEventListener("DOMContentLoaded", function () {
     var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl)
     })
+
+    // Handle flash message
+    var flashMessageEmail = document.getElementById('flash-message-email');
+    if (flashMessageEmail) {
+        document.getElementById("email-signup").value = flashMessageEmail.dataset.message;
+    };
+
+    var flashMessageUnregistered = document.getElementById('flash-message-unregistered');
+    if (flashMessageUnregistered) {
+        // Now you can use 'category' and 'message' as needed
+        document.getElementById("email-signup-feedback").querySelector("#feedback-text").textContent = flashMessageUnregistered.dataset.message;
+        document.getElementById("email-signup").classList.add("is-invalid"); // Apply 'is-invalid' class
+        document.getElementById("email-signup").focus();
+        insertMessageIntoToast("Unregistered User", flashMessageUnregistered.dataset.message, "danger");
+    }
 });
 
 function slugify(str) {
@@ -88,16 +179,42 @@ function validateField(input_id, message = "", f = (input) => { return input.val
     //input.value = input.value.trim();
     if (f(input)) {
         input.classList.remove("is-invalid"); // Remove 'is-invalid' class
+        input.classList.add("is_valid");
         feedback.style.display = "none";
         return true;
     } else {
         input.classList.add("is-invalid"); // Apply 'is-invalid' class
+        input.classList.remove("is_valid");
         feedback.style.display = "block";
         if (message !== "") {
             feedback.querySelector("#feedback-text").textContent = message;
         }
         return false;
     }
+}
+
+function checkFieldExist(input_id, url_checking, data_field_name, ok_handker, failed_handler, network_error_handler = () => {insertMessageIntoToast("Network error", error, "danger")}) {
+    let formData = new FormData();
+    let input = document.getElementById(input_id);
+    let feedback = document.getElementById(input_id + "-feedback");
+    formData.append(data_field_name, input.value);
+    let r;
+    fetch(url_checking, {method: "POST", body: formData})
+        .then(response => {
+            if (response.ok) {
+                ok_handker(input, feedback);
+                r = true;
+            } else {
+                failed_handler(input, feedback);
+                r = false;
+            }
+        })
+        .catch(error => {
+            // Handle any network errors here
+            
+        });
+
+    return r;
 }
 
 function validatePassword() {

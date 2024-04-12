@@ -1,9 +1,9 @@
-document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("username-login").addEventListener("blur", function(event) {
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("username-login").addEventListener("blur", function (event) {
         validateField("username-login", "Please enter your username or email.");
     });
 
-    document.getElementById("password-login").addEventListener("blur", function(event) {
+    document.getElementById("password-login").addEventListener("blur", function (event) {
         validateField("password-login", "Please enter a password.");
     });
 
@@ -29,6 +29,24 @@ document.addEventListener("DOMContentLoaded", function() {
         insertMessageIntoToast("Incorrect Password", "Try to remember the passwordsignin and retry again", "danger");
     }
 
+    if (document.getElementById('flash-message-mail-sent')) {
+        // Now you can use 'category' and 'message' as needed
+        insertMessageIntoToast("Mail sent", "Reset password request sent. Check your email", "success");
+    }
+
+    var flashMessageInvalidResetToken = document.getElementById('flash-message-invalid-reset-token');
+    if (document.getElementById('flash-message-invalid-reset-token')) {
+        // Now you can use 'category' and 'message' as needed
+        insertMessageIntoToast("Invalid Token", flashMessageInvalidResetToken.dataset.message, "danger");
+    }
+
+    var flashMessageFillEmail = document.getElementById('flash-message-fill-email')
+    if (flashMessageFillEmail) {
+        // Now you can use 'category' and 'message' as needed
+        document.getElementById("username-login").value = flashMessageFillEmail.dataset.message;
+        document.getElementById("password-login").focus();
+    }
+
     var flashMessageRemember = document.getElementById('flash-message-remember')
     if (flashMessageRemember) {
         // Now you can use 'category' and 'message' as needed
@@ -49,10 +67,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     var passwordLoginInputGroups = document.querySelectorAll(".password-with-eye");
-    passwordLoginInputGroups.forEach(function(passwordLoginInputGroup) {
+    passwordLoginInputGroups.forEach(function (passwordLoginInputGroup) {
         var passwordLoginInput = passwordLoginInputGroup.querySelector(".form-control");
         var showPasswordLogin = passwordLoginInputGroup.querySelector(".input-group-text");
-        showPasswordLogin.addEventListener('click', function() {
+        showPasswordLogin.addEventListener('click', function () {
             var type = passwordLoginInput.getAttribute('type') === 'password' ? 'input' : 'password';
             passwordLoginInput.setAttribute('type', type);
             showPasswordLogin.querySelector(".bi").className = type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
@@ -60,16 +78,18 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 });
 
-function validateField(input_id, message="") {
+function validateField(input_id, message = "") {
     var input = document.getElementById(input_id);
     var feedback = document.getElementById(input_id + "-feedback");
     // input.value = input.value.trim();
     if (input.value.length > 0) {
         input.classList.remove("is-invalid"); // Remove 'is-invalid' class
+        input.classList.add("is_valid");
         feedback.style.display = "none";
         return true;
     } else {
         input.classList.add("is-invalid"); // Apply 'is-invalid' class
+        input.classList.remove("is_valid");
         feedback.style.display = "block";
         if (message !== "") {
             // feedback.textContent = message;

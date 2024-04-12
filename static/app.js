@@ -180,10 +180,49 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelector('a[href="#text-editor-sect"]').addEventListener("click", scrollIntoView);
     document.querySelector('a[href="#operator-notes"]').addEventListener("click", scrollIntoView);
     document.querySelector('a[href="#file-retention-period"]').addEventListener("click", scrollIntoView);
+
+    // Get references to input elements and their corresponding buttons
+    const inputElements = document.querySelectorAll('input[type="text"]');
+    const pasteButtons = document.querySelectorAll('.clipboard-btn');
+    // Add event listeners to the input fields
+    inputElements.forEach((input, index) => {
+        pasteButtons[index].onclick = async function() {
+            if (input.value === "") {
+                navigator.clipboard.readText()
+                .then(text => {
+                    // Assign the text to the text field
+                    input.value = text;
+                })
+                .catch(err => {
+                    console.error('Failed to read clipboard contents: ', err);
+                });
+            } else {
+                input.value = "";
+            }
+
+        };
+
+        input.addEventListener('input', () => {
+            const button = pasteButtons[index];
+            const icon = button.querySelector('i');
+            // Check if the input field is empty
+            if (input.value.trim() === '') {
+                // Change icon to clipboard if input is empty
+                icon.className = 'bi bi-clipboard';
+                button.classList.add("btn-outline-secondary");
+                button.classList.remove("btn-outline-danger");
+            } else {
+                // Change icon to trash if input is not empty
+                icon.className = 'bi bi-trash3';
+                button.classList.add("btn-outline-danger");
+                button.classList.remove("btn-outline-secondary");
+            }
+        });
+    });
 });
 
 function startLongPress(event) {
-    event.preventDefault();
+    // event.preventDefault();
     longPressTimer = setTimeout(function() {
         // Long press detected, initiate the file download
         getFileFromUrl(true);
@@ -192,7 +231,7 @@ function startLongPress(event) {
 }
 
 function endLongPress(event) {
-    event.preventDefault();
+    // event.preventDefault();
     clearTimeout(longPressTimer);
     if (!fetchDataLongPressed) {
         getFileFromUrl(false);
@@ -201,7 +240,7 @@ function endLongPress(event) {
 }
 
 function cancelLongPress(event) {
-    event.preventDefault();
+    // event.preventDefault();
     clearTimeout(longPressTimer);
     fetchDataLongPressed = false;
 }
@@ -231,15 +270,19 @@ function datetimeToTimestamp(dateString) {
 function toggleSecret() {
     var secretInput = document.getElementById("secret");
     var enableSecretCheckbox = document.getElementById("enableSecret");
+    var pastingSecret = document.getElementById("pasting-secret-btn")
     secretInput.disabled = !enableSecretCheckbox.checked;
+    pastingSecret.disabled = !enableSecretCheckbox.checked;
 }
 
 function toggleExpiration() {
     var expiresInput = document.getElementById('expires');
     var datetimeInput = document.getElementById('datetimepicker');
     var enableExpirationCheckbox = document.getElementById("enableExpiration");
+    var pastingDatetimepicker = document.getElementById("pasting-datetimepicker-btn");
     expiresInput.disabled = !enableExpirationCheckbox.checked;
     datetimeInput.disabled = !enableExpirationCheckbox.checked;
+    pastingDatetimepicker.disabled = !enableExpirationCheckbox.checked;
 }
 
 function validateFileSelection() {

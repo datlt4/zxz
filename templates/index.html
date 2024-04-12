@@ -101,7 +101,10 @@
                             </svg>
                         </div>
                     </div>
-                    <input type="file" class="form-control" id="file" name="file">
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="file" name="file">
+                        <!--<button id="pasting-file-btn" class="btn clear-btn btn-outline-secondary" type="button" onclick="pasting_content_to_input('file')"><i class="bi bi-trash3"></i></button>-->
+                    </div>
                     <div id="file-feedback" class="invalid-feedback">Please choose a file.</div>
                 </div>
                 <div class="mb-3">
@@ -112,6 +115,8 @@
                             <input class="form-check-input mt-0" type="checkbox" id="enableSecret" onchange="toggleSecret()">
                         </div>
                         <input type="text" class="form-control" id="secret" name="secret" disabled>
+                        <button id="pasting-secret-btn" class="btn clipboard-btn clear-btn btn-outline-secondary" type="button" onclick="pasting_content_to_input('secret')" disabled><i class="bi bi-clipboard"></i></button>
+                        <!--<button class="btn btn-outline-secondary" type="button" style="display: none;"><i class="bi bi-trash3"></i></button>-->
                     </div>
                 </div>
                 <div class="mb-3">
@@ -121,11 +126,12 @@
                             <input class="form-check-input mt-0" type="checkbox" id="enableExpiration" onchange="toggleExpiration()">
                         </div>
                         <input type="datetime-local" class="form-control" id="datetimepicker" name="datetimepicker" disabled>
+                        <!--<button id="pasting-datetimepicker-btn" class="btn clear-btn btn-outline-secondary" type="button" onclick="pasting_content_to_input('datetimepicker')" disabled><i class="bi bi-trash3"></i></button>-->
                     </div>
                     <input type="hidden" class="form-control" id="expires" name="expires" disabled>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
-                    <button id="submit-btn" type="button" class="btn btn-primary custom-btn" onclick="submitForm()">Submit</button>
+                    <button id="submit-btn" type="button" class="btn btn-primary custom-btn" onclick="submitForm()">Submit <i class="bi bi-send"></i></button>
                     <div id="checkmark-submit" class="checkmark hide" style="padding-top: 3px">
                         <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
                             <g transform="">
@@ -164,11 +170,14 @@
             <form id="shortenUrlForm" enctype="multipart/form-data">
                 <div class="mb-3">
                     <label for="shorten" class="form-label">URL</label>
-                    <input type="text" class="form-control" id="shorten" name="shorten">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="shorten" name="shorten">
+                        <button id="pasting-shorten-btn" class="btn clipboard-btn clear-btn btn-outline-secondary" type="button" onclick="pasting_content_to_input('shorten')"><i class="bi bi-clipboard"></i></button>
+                    </div>
                     <div id="shorten-feedback" class="invalid-feedback">Please enter an URL.</div>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
-                    <button id="submit-shorten-url-btn" type="button" class="btn btn-primary custom-btn" style="margin-right: 10px;" onclick="submitShortenUrl()">Submit</button>
+                    <button id="submit-shorten-url-btn" type="button" class="btn btn-primary custom-btn" style="margin-right: 10px;" onclick="submitShortenUrl()">Submit <i class="bi bi-send"></i></button>
                     <div id="checkmark-submit-shorten-url" class="checkmark hide" style="padding-top: 3px">
                         <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
                             <g transform="">
@@ -206,7 +215,8 @@
         <div class="col-md-12 indented-content">
             <div class="input-group mb-3">
                 <input type="text" id="download-url" class="form-control" placeholder="Download link" aria-label="Download link" aria-describedby="get-data-from-url">
-                <button class="btn btn-outline-primary custom-btn" type="button" id="get-data-from-url">Download</button>
+                <button id="pasting-download-url-btn" class="btn clipboard-btn clear-btn btn-outline-secondary" type="button" onclick="pasting_content_to_input('download-url')"><i class="bi bi-clipboard"></i></button>
+                <button class="btn btn-outline-primary custom-btn" type="button" id="get-data-from-url"><i class="bi bi-cloud-lightning-fill"></i></button>
             </div>
             <div id="download-from-url-feedback" class="invalid-feedback">Please enter an valid URL.</div>
             <form id="scriptForm" enctype="multipart/form-data">
@@ -229,7 +239,7 @@
                     <div id="script-feedback" class="invalid-feedback hide">Please enter an your script.</div>
                 </div>
                 <div class="mb-3 d-flex align-items-center">
-                    <button id="submit-script-btn" type="button" class="btn btn-primary custom-btn" style="margin-right: 10px;" onclick="submitScript()">Submit</button>
+                    <button id="submit-script-btn" type="button" class="btn btn-primary custom-btn" style="margin-right: 10px;" onclick="submitScript()">Submit <i class="bi bi-send"></i></button>
                     <div id="checkmark-submit-script" class="checkmark hide" style="padding-top: 3px">
                         <svg version="1.1" x="0px" y="0px" width="30px" height="30px" viewBox="0, 0, 100, 100" id="checkmark-svg">
                             <g transform="">

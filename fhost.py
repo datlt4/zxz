@@ -19,7 +19,7 @@
     and limitations under the License.
 """
 
-from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template, send_file, flash
+from flask import Flask, abort, make_response, redirect, request, send_from_directory, url_for, jsonify, Response, render_template, send_file, flash, current_app
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from sqlalchemy import and_, or_, Enum
@@ -48,12 +48,16 @@ from http import HTTPStatus
 from inspect import currentframe, getframeinfo
 from flask_login import UserMixin, login_required, login_user, current_user, logout_user, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_mail import Mail, Message
+# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous import URLSafeTimedSerializer as Serializer
 
 HTTP_URL_PATTERN = re.compile(r"(http[s]*://[\w.:]+)/?.*")
 EMAIL_ADDRESS_PATTERN = re.compile(r"^[\w. +-]+@[\w-]+\.[\w.-]+$")
 
 app = Flask(__name__, instance_relative_config=True)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
+mail = Mail(app)
 app.secret_key = sha256(str(time.time()).encode("utf-8")).hexdigest()
 app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
@@ -110,6 +114,7 @@ if app.config["NSFW_DETECT"]:
     from nsfw_detect import NSFWDetector
     nsfw = NSFWDetector()
 
+
 try:
     mimedetect = Magic(mime=True, mime_encoding=False)
 except:
@@ -153,7 +158,8 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     avatar_method = db.Column(db.Boolean, default=True) # True: use custom avatar, False: lookup avatar by email address
     avatar = db.Column(db.UnicodeText(255), default="")
-    email_verified_at = db.Column(db.DateTime, nullable=True)
+    is_confirmed = db.Column(db.Boolean, nullable=True, default=False)
+    confirmed_on = db.Column(db.DateTime, nullable=True)
     remember_token = db.Column(db.UnicodeText(255), nullable=True)
     is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=False)
@@ -171,6 +177,22 @@ class User(UserMixin, db.Model):
         self.is_admin = is_admin
         self.is_active = is_active
         self.email_verified_at = email_verified_at
+
+    def get_reset_password_token(self, expires_in: int, type_token: str):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({"user_id": self.id, "type_token": type_token, "expiration": time.time() + expires_in})
+
+    @staticmethod
+    def verify_reset_password_token(token, type_token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            user_id = s.loads(token)['user_id']
+            expiration = s.loads(token)['expiration']
+            if (s.loads(token)['type_token'] != type_token) or (expiration < time.time()):
+                return None
+        except:
+            return None
+        return db.session.get(User, user_id)
 
     def get_username(self):
         return self.username
@@ -201,7 +223,7 @@ class User(UserMixin, db.Model):
         self.updated_at = datetime.datetime.utcnow()
 
     def __repr__(self):
-        return f'<User:\tusername: "{self.username}"\n\temail: "{self.email}"\n\tis_admin: {self.is_admin}\n\tis_active: {self.is_active}\n\temail_verified_at: {self.email_verified_at}\n\tcreated_at: {self.created_at}\n\tcreated_at: {self.created_at}\n\tupdated_at: {self.updated_at}>'
+        return f'<User:\tusername: "{self.username}"\n\temail: "{self.email}"\n>'
 
 class URL(db.Model):
     __tablename__ = "URL"
@@ -551,6 +573,89 @@ def unauthorized():
     abort(HTTPStatus.UNAUTHORIZED)
     return
 
+@app.route('/activate-account', methods=["GET", "POST"])
+def activate_account():
+    if (current_user.is_authenticated):
+        return redirect(url_for("fhost"))
+    else:
+        if request.method == "POST":
+            # user_info = request.form.get('user_info').strip()
+            # password = request.form.get('password')
+            # remember = True if request.form.get('remember') else False
+            return redirect(url_for("fhost"))
+        else:
+            if (current_user.is_authenticated):
+                return redirect(url_for("fhost"))
+            else:
+                return render_template("activate-account.html")
+
+@app.route('/check-email', methods=["POST"])
+def check_email():
+    email = request.form.get('email').strip()
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        abort(HTTPStatus.NOT_FOUND)
+    else:
+        return {"status": "OK"}
+
+@app.route('/check-username', methods=["POST"])
+def check_username():
+    username = request.form.get('username').strip()
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        abort(HTTPStatus.NOT_FOUND)
+    else:
+        return {"status": "OK"}
+
+@app.route('/forgot-password', methods=["GET", "POST"])
+def forgot_password():
+    if (current_user.is_authenticated):
+        return redirect(url_for("fhost"))
+    else:
+        if request.method == "POST":
+            email = request.form.get('email').strip()
+            user = User.query.filter_by(email=email).first()
+            if user is None:
+                flash(email, 'email')
+                flash('Email address has not unregistered yet.', 'unregistered')
+                return redirect(url_for("signup"))
+            flash('Reset password request sent. Check your email.', 'mail-sent')
+            flash(email, 'fill-email')
+            # return redirect(url_for("login"))
+            token = user.get_reset_password_token(app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"]*60, type_token="reset-password")
+            return render_template("email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"])
+        else:
+            return render_template("forgot-password.html")
+
+@app.route('/reset-password/<token>', methods=["GET", "POST"])
+def reset_password(token:str):
+    if (current_user.is_authenticated):
+        return redirect(url_for("fhost"))
+    else:
+        user = User.verify_reset_password_token(token, type_token="reset-password")
+        if user is None:
+            flash('TOKEN IS INVALID OR EXPIRED.', 'invalid-reset-token')
+            return redirect(url_for("forgot_password"))
+
+        if request.method == "POST":
+            new_password = request.form.get('password')
+            if new_password is None:
+                abort(400)
+            try:
+                # create new user with the form data. Hash the password so plaintext version isn't saved.
+                user.change_password(new_password)
+                # add the new user to the database
+                db.session.commit()
+                flash("Password changed successfully", 'change-password-successfully')
+                return redirect(url_for("login"))
+            except Exception as e:
+                print(e)
+                abort(500)
+        else:
+            flash(user.email, 'email')
+            flash(user.username, 'username')
+            return render_template("reset-password.html", token=token)
+
 @app.route('/login', methods=["GET", "POST"])
 def login():
     if request.method == "POST":
@@ -731,7 +836,6 @@ def update_profile():
     else:
         abort(403)
 
-
 @app.route("/<path:path>", methods=["GET", "POST"])
 @app.route("/s/<secret>/<path:path>", methods=["GET", "POST"])
 def get(path, secret=None):
@@ -790,6 +894,10 @@ def get(path, secret=None):
 
 @app.route("/", methods=["GET", "POST"])
 def fhost():
+    # msg = Message("TEst email", sender="noreply@zxz.com", recipients=["luongtandat.m0145@gmail.com"])
+    # msg.body = 'text body'
+    # msg.html = '<h1>HTML body</h1>'
+    # mail.send(msg)
     if request.method == "POST":
         sf = None
         if "file" in request.files:
@@ -902,6 +1010,7 @@ Disallow: /
 @app.errorhandler(401)
 @app.errorhandler(403)
 @app.errorhandler(404)
+@app.errorhandler(405)
 @app.errorhandler(409)
 @app.errorhandler(411)
 @app.errorhandler(413)

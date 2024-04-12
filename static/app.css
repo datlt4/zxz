@@ -401,3 +401,7 @@ input.form-control {
     color: #e8e2d8;
     border-radius: 0 0 5px 5px;
 }
+
+.clipboard-btn:disabled {
+    background-color: #f8f9fa !important;
+}
