@@ -606,7 +606,7 @@ def activate_required(func):
     def decorated_function(*args, **kwargs):
         if (current_user is not None) and (current_user.is_authenticated) and (not current_user.is_confirmed):
             flash("Your account has not activated yet", "not-activated")
-            return render_template("activate-account.html")
+            return render_template("auth/activate-account.html")
         return func(*args, **kwargs)
     return decorated_function
 
@@ -668,7 +668,7 @@ def request_activate_account():
                 send_email(subject="Activate your ZXZ account",
                             sender=app.config["MAIL_USERNAME"],
                             recipients=[current_user.email], text_body="HELLO",
-                            html_body=render_template("email-activate-account.html", token=token, expires_in=app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]))
+                            html_body=render_template("auth/email-activate-account.html", token=token, expires_in=app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]))
                 return {"status": "OK"}
             except Exception as e:
                 print(e)
@@ -682,12 +682,12 @@ def activate_account(token):
         return redirect(url_for("fhost"))
     elif user.is_confirmed:
         flash('ACCOUNT WAS ACTIVATED SUCCESSFULLY.', 'account-activated')
-        return render_template("activate-account-success.html")
+        return render_template("auth/activate-account-success.html")
     else:
         user.confirm_email()
         db.session.commit()
         flash('ACCOUNT WAS ACTIVATED SUCCESSFULLY.', 'account-activated')
-        return render_template("activate-account-success.html")
+        return render_template("auth/activate-account-success.html")
 
 @app.route('/forgot-password', methods=["GET", "POST"])
 @logout_required
@@ -700,19 +700,19 @@ def forgot_password():
             flash('Email address has not unregistered yet.', 'unregistered')
             return redirect(url_for("signup"))
         token = user.get_reset_password_token(app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"]*60, type_token="reset-password")
-        # return render_template("email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"])
+        # return render_template("auth/email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"])
         try:
             send_email(subject="Reset your ZXZ account password",
                         sender=app.config["MAIL_USERNAME"],
                         recipients=[email], text_body="HELLO",
-                        html_body=render_template("email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"]))
+                        html_body=render_template("auth/email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"]))
             flash('Reset password request sent. Check your email.', 'mail-sent')
             flash(email, 'fill-email')
             return redirect(url_for("login"))
         except Exception as e:
             abort(HTTPStatus.INTERNAL_SERVER_ERROR)
     else:
-        return render_template("forgot-password.html")
+        return render_template("auth/forgot-password.html")
 
 @app.route('/reset-password/<token>', methods=["GET", "POST"])
 @logout_required
@@ -739,7 +739,7 @@ def reset_password(token:str):
     else:
         flash(user.email, 'email')
         flash(user.username, 'username')
-        return render_template("reset-password.html", token=token)
+        return render_template("auth/reset-password.html", token=token)
 
 @app.route('/login', methods=["GET", "POST"])
 @logout_required
@@ -778,7 +778,7 @@ def login():
             flash("", 'first-user')
             return redirect(url_for('signup'))
         else:
-            return render_template("login.html")
+            return render_template("auth/login.html")
 
 @app.route('/signup', methods=["GET", "POST"])
 @logout_required
@@ -820,7 +820,7 @@ def signup():
                 send_email(subject="Activate your ZXZ account",
                             sender=app.config["MAIL_USERNAME"],
                             recipients=[email], text_body="HELLO",
-                            html_body=render_template("email-activate-account.html", token=token, expires_in=app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]))
+                            html_body=render_template("auth/email-activate-account.html", token=token, expires_in=app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]))
                 flash('Activate account request sent. Check your email.', 'mail-sent')
             except Exception as e:
                 print(e)
@@ -833,7 +833,7 @@ def signup():
     else:
         if db.session.query(User).count() <= 1:
             flash("", 'first-user')
-        return render_template('signup.html')
+        return render_template('auth/signup.html')
 
 @app.route('/logout', methods=["GET", "POST"])
 @login_required
@@ -845,7 +845,7 @@ def logout():
 @login_required
 @activate_required
 def profile():
-    return render_template("profile.html")
+    return render_template("auth/profile.html")
 
 @app.route('/change-password', methods=["POST"])
 @login_required
@@ -1014,10 +1014,19 @@ def fhost():
                         else:
                             f.write(chunk)
                 os.system(f"ls -lht {file_path}")
+                
+                # get expires and handle if if expires fields is NaN
+                expires = None
+                try:
+                    if "expires" in request.form:
+                        expires = int(request.form["expires"])
+                except Exception as e:
+                    print(e)
+                
                 # Store the file with the requested expiration date
                 return store_file(
                     request.files["file"],
-                    int(request.form["expires"]) if ("expires" in request.form) else None,
+                    expires,
                     request.remote_addr,
                     request.user_agent.string,
                     slugify(request.form["secret"]) if ("secret" in request.form) else None,
@@ -1041,7 +1050,7 @@ def fhost():
 
         abort(400)
     else:
-        return render_template("index.html")
+        return render_template("pages/index.html")
 
 @app.route('/fetch-content', methods=["POST"])
 @activate_required
@@ -1117,7 +1126,7 @@ Disallow: /
 @app.errorhandler(500)
 def ehandler(e):
     try:
-        return render_template(f"{e.code}.html", id=id, request=request), e.code
+        return render_template(f"errors/{e.code}.html", id=id, request=request), e.code
     except TemplateNotFound:
         return "Segmentation fault\n", e.code
 

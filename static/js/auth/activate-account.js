@@ -90,9 +90,9 @@ function requestEmailToActivate() {
     fetch("/request-activate-account", { method: "POST" })
         .then(response => {
             if (response.ok) {
-                console.log("request-activate-account: OKE");
+                insertMessageIntoToast("", "Activation email has sent successfully", "success")
             } else {
-                console.log("request-activate-account: FAILED");
+                insertMessageIntoToast("", "Got error when sent email", "danger")
             }
         })
 }

@@ -71,11 +71,11 @@
                 </form>
             </div>
         </div>
-        {% include "toast-template.html" %}
+        {% include "common/toast-template.html" %}
     </div>
 </div>
 
 
 <!-- Customize JS -->
-<script src="{{ url_for('static', filename='login.js') }}"></script>
+<script src="{{ url_for('static', filename='js/auth/login.js') }}"></script>
 {% endblock %}

@@ -62,7 +62,7 @@
             </p>
         </div>
     </div>
-    {% include "toast-template.html" %}
+    {% include "common/toast-template.html" %}
 </div>
 <div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="terms-of-service">
@@ -330,7 +330,7 @@
 <!-- FileSaver.js -->
 <script language="javascript" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
 <!-- Customize JS -->
-<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
 <script type="text/javascript">
     var min_age = {{'{: 6}'.format(config.get("FHOST_MIN_EXPIRATION", 2592000000)/86400000)}};
     var max_age = {{'{: 6}'.format(config.get("FHOST_MAX_EXPIRATION", 2592000000)/86400000)}};
