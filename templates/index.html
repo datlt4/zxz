@@ -3,9 +3,18 @@
 {% block title %}nullptr{% endblock %}
 
 {% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div id="flash-message-{{ category }}" data-category="{{ category }}" data-message="{{ message }}"></div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
 {% set fhost_url = url_for("fhost", _external=True).rstrip("/") %}
 {% set min_age = '{: 6.0f}'.format(config.get("FHOST_MIN_EXPIRATION", 2592000000)/86400000) %}
 {% set max_age = '{: 6.0f}'.format(config.get("FHOST_MAX_EXPIRATION", 2592000000)/86400000) %}
+
 <div class="col-md-12 mb-4 border rounded-4 p-3">
     <h2 id="the-null-pointer">
         <span>THE NULL POINTER</span>

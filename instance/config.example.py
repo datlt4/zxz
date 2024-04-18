@@ -27,7 +27,8 @@
 # Until https://git.0x0.st/mia/0x0/issues/70 is resolved, it's recommended that
 # any sqlite databases use an absolute path, as relative paths aren't consistently
 # resolved.
-SQLALCHEMY_DATABASE_URI = 'sqlite:///' + '/path/to/database.sqlite'
+import os
+SQLALCHEMY_DATABASE_URI = os.environ.get("SQLALCHEMY_DATABASE_URI", "sqlite:////python-docker/fhost_db.sql/fhost.db")
 
 
 # The maximum allowable upload size, in bytes
@@ -35,14 +36,14 @@ SQLALCHEMY_DATABASE_URI = 'sqlite:///' + '/path/to/database.sqlite'
 # Keep in mind that this affects the expiration of files as well!  The closer a
 # file is to the max content length, the less time it will last before being
 # deleted.
-MAX_CONTENT_LENGTH = 256 * 1024 * 1024 # Default: 256MiB
+MAX_CONTENT_LENGTH = int(float(os.environ.get("MAX_CONTENT_LENGTH", 3 * 1024)) * 1024 * 1024) # Default: 256MiB
 
 
 # The maximum length of URLs we'll shorten, in characters
 #
 # If a user tries to submit a URL longer than this, we'll reject their request
 # with a 414 REQUEST URI TOO LONG.
-MAX_URL_LENGTH = 4096
+MAX_URL_LENGTH = int(float(os.environ.get("MAX_URL_LENGTH", 4096)))
 
 
 # The minimum and maximum amount of time we'll retain a file for
@@ -54,8 +55,8 @@ MAX_URL_LENGTH = 4096
 #
 # All times are in milliseconds.  If you want all files to be stored for the same amount
 # of time, set these to the same value.
-FHOST_MIN_EXPIRATION = 30  * 24 * 60 * 60 * 1000
-FHOST_MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000
+FHOST_MIN_EXPIRATION = int(float(os.environ.get("FHOST_MIN_EXPIRATION", 30))  * 24 * 60 * 60 * 1000)
+FHOST_MAX_EXPIRATION = int(float(os.environ.get("FHOST_MAX_EXPIRATION", 365)) * 24 * 60 * 60 * 1000)
 
 
 # This should be detected automatically when running behind a reverse proxy, but needs
@@ -74,7 +75,7 @@ FHOST_MAX_EXPIRATION = 365 * 24 * 60 * 60 * 1000
 # Some webservers can be configured use the X-Sendfile header to handle sending
 # large files on behalf of the application.  If your server is setup to do
 # this, set this variable to True
-USE_X_SENDFILE = False
+USE_X_SENDFILE = bool(int(os.environ.get("USE_X_SENDFILE", False)))
 
 
 # Use X-Accel-Redirect to speed up serving files w/ compatible webservers
@@ -85,14 +86,14 @@ USE_X_SENDFILE = False
 #
 # Note:  It's recommended that you use either X-Sendfile or X-Accel-Redirect
 # when you deploy in production.
-FHOST_USE_X_ACCEL_REDIRECT = True # expect nginx by default
+FHOST_USE_X_ACCEL_REDIRECT = bool(int(os.environ.get("FHOST_USE_X_ACCEL_REDIRECT", True))) # expect nginx by default
 
 
 # The directory that 0x0 should store uploaded files in
 #
 # Whenever a file is uploaded to 0x0, we store it here!  Relative paths are
 # resolved relative to the working directory that 0x0 is being run from.
-FHOST_STORAGE_PATH = "up"
+FHOST_STORAGE_PATH = os.environ.get("FHOST_STORAGE_PATH", "/file")
 
 
 # The maximum acceptable user-specified file extension
@@ -110,7 +111,7 @@ FHOST_MAX_EXT_LENGTH = 9
 # When a user uploads a file with the "secret" option, 0x0 generates a string
 # from this many bytes of random data. It is base64-encoded, so on average
 # each byte results in approximately 1.3 characters.
-FHOST_SECRET_BYTES = 16
+FHOST_SECRET_BYTES = int(os.environ.get("FHOST_SECRET_BYTES", 16))
 
 # A list of filetypes to use when the uploader doesn't specify one
 #
@@ -166,7 +167,7 @@ FHOST_UPLOAD_BLACKLIST = None
 # Enables support for detecting NSFW images
 #
 # Consult README.md for additional dependencies before setting to True
-NSFW_DETECT = False
+NSFW_DETECT = bool(int(os.environ.get("NSFW_DETECT", False)))
 
 
 # The cutoff for when an image is considered NFSW
@@ -176,7 +177,7 @@ NSFW_DETECT = False
 # are marked as NSFW.
 #
 # If NSFW_DETECT is set to False, then this has no effect.
-NSFW_THRESHOLD = 0.608
+NSFW_THRESHOLD = float(os.environ.get("NSFW_THRESHOLD", 0.608))
 
 
 # If you want to scan files for viruses using ClamAV, specify the socket used
@@ -214,13 +215,4 @@ VSCAN_IGNORE = [
 #
 # If this list is too short, then URLs can very quickly become long.
 # Generally, the default value for this should work for basically all usecases.
-URL_ALPHABET = "DEQhd2uFteibPwq0SWBInTpA_jcZL5GKz3YCR14Ulk87Jors9vNHgfaOmMXy6Vx-"
-
-
- #################################################################################
- # CONGRATULATIONS!  You made it all the way through!                            #
- # If you want to go even further to customize your instance, try checking out   #
- # the templates in the templates/ directory to customize your landing page, 404 #
- # page, and other error pages.                                                  #
- #################################################################################
-
+URL_ALPHABET = os.environ.get("URL_ALPHABET", "DEQhd2uFteibPwq0SWBInTpA_jcZL5GKz3YCR14Ulk87Jors9vNHgfaOmMXy6Vx-")

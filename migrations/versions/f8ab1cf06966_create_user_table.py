@@ -1,13 +1,13 @@
-"""create user table
+"""Create user table
 
-Revision ID: 80fc049de1ce
+Revision ID: f8ab1cf06966
 Revises: dd0766afb7d2
-Create Date: 2024-03-20 02:13:10.416056
+Create Date: 2024-04-17 02:43:31.303106
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '80fc049de1ce'
+revision = 'f8ab1cf06966'
 down_revision = 'dd0766afb7d2'
 
 from alembic import op
@@ -34,7 +34,8 @@ def upgrade():
     sa.Column('is_admin', sa.Boolean(), nullable=True),
     sa.Column('avatar_method', sa.Boolean(), nullable=True),
     sa.Column('avatar', sa.UnicodeText(length=255), nullable=True),
-    sa.Column('email_verified_at', sa.DateTime(), nullable=True),
+    sa.Column('is_confirmed', sa.Boolean(), nullable=False),
+    sa.Column('confirmed_on', sa.DateTime(), nullable=True),
     sa.Column('remember_token', sa.UnicodeText(length=255), nullable=True),
     sa.Column('is_active', sa.Boolean(), nullable=True),
     sa.Column('created_at', sa.DateTime(), nullable=True),

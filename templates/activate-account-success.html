@@ -1,0 +1,81 @@
+{% extends "layout.html" %}
+
+{% block title %}Activate account | nullptr{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div id="flash-message-{{ category }}" data-category="{{ category }}" data-message="{{ message }}"></div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 mb-5 border rounded-4 p-3">
+        <h2 class="mt-3 mb-4 d-flex align-items-center justify-content-center">
+            <span style="color: #665c78;">You're all set!</span>
+            <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#login" style="padding-left: 0.375em;"></a>
+        </h2>
+        <div class="row">
+            <div class="offset-md-1 col-md-10 mt-5 mb-5 indented-content">
+                <p style="color: #665c78; font-size: 16px" class="mb-3 d-flex">Welcome to ZXZ.</p>
+                <p style="color: #665c78; font-size: 16px" class="mb-3 d-flex">Your account is activated successfully.</p>
+            </div>
+            <div class="offset-md-3 col-md-6 mb-4 indented-content">
+                <div class="mb-3 d-flex align-items-center justify-content-center">
+                    <button id="back-home" type="button" class="btn btn-outline-info custom-btn w-100" onclick="window.location.href='/'">Back to Homepage</button>
+                </div>
+            </div>
+        </div>
+        {% include "toast-template.html" %}
+    </div>
+</div>
+
+
+<style>
+    # #back-home {
+    #     border-color: #665c78;
+    #     color: #665c78;
+    # }
+    # #back-home:hover {
+    #     background-color: #665c78;
+    #     border-color: #665c78;
+    #     color: #e0dee4;
+    # }
+
+    #back-home.custom-btn {
+        color: #665c78; /* Text color */
+        border-color: #665c78; /* Border color */
+    }
+    
+    #back-home.custom-btn:hover {
+        color: #e0dee4; /* Text color on hover */
+        background-color: #665c78; /* Background color on hover */
+        border-color: #665c78; /* Border color on hover */
+    }
+    
+    #back-home.custom-btn {
+        color: #665c78; /* Text color */
+        border-color: #665c78; /* Border color */
+    }
+    
+    #back-home.custom-btn:hover {
+        color: #e0dee4; /* Text color on hover */
+        background-color: #665c78; /* Background color on hover */
+        border-color: #665c78; /* Border color on hover */
+    }
+
+</style>
+
+<script type="text/javascript">
+    document.addEventListener("DOMContentLoaded", function () {
+        if (document.getElementById('flash-message-account-activated')) {
+            // Now you can use 'category' and 'message' as needed
+            insertMessageIntoToast("Activate Successfully", document.getElementById('flash-message-account-activated').dataset.message, "success");
+        }
+    });
+    
+    
+</script>
+{% endblock %}

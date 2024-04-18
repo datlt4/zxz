@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
     var flashMessageInvalidResetToken = document.getElementById('flash-message-invalid-reset-token');
-    if (document.getElementById('flash-message-invalid-reset-token')) {
+    if (flashMessageInvalidResetToken) {
         // Now you can use 'category' and 'message' as needed
         insertMessageIntoToast("Invalid Token", flashMessageInvalidResetToken.dataset.message, "danger");
         document.getElementById("email-forgot-password").focus()

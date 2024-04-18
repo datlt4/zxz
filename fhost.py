@@ -49,15 +49,15 @@ from inspect import currentframe, getframeinfo
 from flask_login import UserMixin, login_required, login_user, current_user, logout_user, LoginManager
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_mail import Mail, Message
-# from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from itsdangerous import URLSafeTimedSerializer as Serializer
+from functools import wraps
+from threading import Thread
 
 HTTP_URL_PATTERN = re.compile(r"(http[s]*://[\w.:]+)/?.*")
 EMAIL_ADDRESS_PATTERN = re.compile(r"^[\w. +-]+@[\w-]+\.[\w.-]+$")
 
 app = Flask(__name__, instance_relative_config=True)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
-mail = Mail(app)
 app.secret_key = sha256(str(time.time()).encode("utf-8")).hexdigest()
 app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
@@ -97,7 +97,17 @@ app.config.update(
     ],
     VSCAN_INTERVAL = datetime.timedelta(days=7),
     URL_ALPHABET = "DEQhd2uFteibPwq0SWBInTpA_jcZL5GKz3YCR14Ulk87Jors9vNHgfaOmMXy6Vx-",
-    REMEMBER_COOKIE_DURATION = datetime.timedelta(hours=12)
+    REMEMBER_COOKIE_DURATION = datetime.timedelta(hours=12),
+    # Gmail config
+    MAIL_SERVER = os.environ.get("MAIL_SERVER", "smtp.gmail.com"),
+    MAIL_PORT = int(os.environ.get("MAIL_PORT", 587)),
+    MAIL_USERNAME = os.environ.get("MAIL_USERNAME"),
+    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD"),
+    MAIL_USE_TLS = bool(int(os.environ.get("MAIL_USE_TLS", True))),
+    MAIL_USE_SSL = bool(int(os.environ.get("MAIL_USE_SSL", False))),
+    # Email token expiration
+    RESET_PASSWORD_TOKEN_EXPIRES_IN = int(os.environ.get("RESET_PASSWORD_TOKEN_EXPIRES_IN", 20)),
+    ACTIVATE_EMAIL_TOKEN_EXPIRES_IN = int(os.environ.get("ACTIVATE_EMAIL_TOKEN_EXPIRES_IN", 20)),
 )
 
 if not app.config["TESTING"]:
@@ -114,7 +124,6 @@ if app.config["NSFW_DETECT"]:
     from nsfw_detect import NSFWDetector
     nsfw = NSFWDetector()
 
-
 try:
     mimedetect = Magic(mime=True, mime_encoding=False)
 except:
@@ -124,6 +133,7 @@ Please install python-magic.""")
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+mail = Mail(app)
 
 login_manager = LoginManager()
 login_manager.login_view = 'login'
@@ -158,14 +168,13 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     avatar_method = db.Column(db.Boolean, default=True) # True: use custom avatar, False: lookup avatar by email address
     avatar = db.Column(db.UnicodeText(255), default="")
-    is_confirmed = db.Column(db.Boolean, nullable=True, default=False)
+    is_confirmed = db.Column(db.Boolean, nullable=False, default=False)
     confirmed_on = db.Column(db.DateTime, nullable=True)
     remember_token = db.Column(db.UnicodeText(255), nullable=True)
-    is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)  # Column to store creation timestamp
     updated_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
-    
+
     __table_args__ = (
         db.CheckConstraint(visibility.in_([1, 2, 3]), name='valid_range'),
     )
@@ -177,6 +186,8 @@ class User(UserMixin, db.Model):
         self.is_admin = is_admin
         self.is_active = is_active
         self.email_verified_at = email_verified_at
+        self.created_at = datetime.datetime.utcnow()
+        self.updated_at = datetime.datetime.utcnow()
 
     def get_reset_password_token(self, expires_in: int, type_token: str):
         s = Serializer(current_app.config['SECRET_KEY'])
@@ -210,7 +221,11 @@ class User(UserMixin, db.Model):
 
     def activate_user(self):
         self.is_active = True
-        self.email_verified_at = datetime.datetime.utcnow()
+        self.updated_at = datetime.datetime.utcnow()
+
+    def confirm_email(self):
+        self.is_confirmed = True
+        self.confirmed_on = datetime.datetime.utcnow()
         self.updated_at = datetime.datetime.utcnow()
 
     def change_password(self, new_password):
@@ -564,6 +579,46 @@ def manage_file(f):
 
     abort(400)
 
+def send_async_email(app, msg):
+    with app.app_context():
+        mail.send(msg)
+
+def send_email(subject, sender, recipients, text_body, html_body):
+    msg = Message(subject, sender=sender, recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
+    # thr = Thread(target=send_async_email, args=[app, msg])
+    # thr.start()
+    mail.send(msg)
+
+def logout_required(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        print("current_user:", current_user)
+        if (current_user is not None) and (current_user.is_authenticated):
+            flash("You are already authenicated", "logged-in")
+            return redirect(url_for("fhost"))
+        return func(*args, **kwargs)
+    return decorated_function
+
+def activate_required(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if (current_user is not None) and (current_user.is_authenticated) and (not current_user.is_confirmed):
+            flash("Your account has not activated yet", "not-activated")
+            return render_template("activate-account.html")
+        return func(*args, **kwargs)
+    return decorated_function
+
+def unactivate_required(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        if (current_user is not None) and (current_user.is_authenticated) and (current_user.is_confirmed):
+            flash("Your account has activated already", "account-activated")
+            return redirect(url_for("fhost"))
+        return func(*args, **kwargs)
+    return decorated_function
+
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
@@ -572,22 +627,6 @@ def load_user(user_id):
 def unauthorized():
     abort(HTTPStatus.UNAUTHORIZED)
     return
-
-@app.route('/activate-account', methods=["GET", "POST"])
-def activate_account():
-    if (current_user.is_authenticated):
-        return redirect(url_for("fhost"))
-    else:
-        if request.method == "POST":
-            # user_info = request.form.get('user_info').strip()
-            # password = request.form.get('password')
-            # remember = True if request.form.get('remember') else False
-            return redirect(url_for("fhost"))
-        else:
-            if (current_user.is_authenticated):
-                return redirect(url_for("fhost"))
-            else:
-                return render_template("activate-account.html")
 
 @app.route('/check-email', methods=["POST"])
 def check_email():
@@ -607,56 +646,103 @@ def check_username():
     else:
         return {"status": "OK"}
 
-@app.route('/forgot-password', methods=["GET", "POST"])
-def forgot_password():
-    if (current_user.is_authenticated):
-        return redirect(url_for("fhost"))
+@app.route('/check-is-confirmed', methods=["POST"])
+@login_required
+def check_is_confirmed():
+    if current_user is None:
+        abort(HTTPStatus.NOT_FOUND)
     else:
-        if request.method == "POST":
-            email = request.form.get('email').strip()
-            user = User.query.filter_by(email=email).first()
-            if user is None:
-                flash(email, 'email')
-                flash('Email address has not unregistered yet.', 'unregistered')
-                return redirect(url_for("signup"))
-            flash('Reset password request sent. Check your email.', 'mail-sent')
-            flash(email, 'fill-email')
-            # return redirect(url_for("login"))
-            token = user.get_reset_password_token(app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"]*60, type_token="reset-password")
-            return render_template("email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"])
+        return {"confirmed": current_user.is_confirmed}
+
+@app.route('/request-activate-account', methods=[ "POST"])
+@login_required
+@unactivate_required
+def request_activate_account():
+    if request.method == "POST":
+        if current_user is None:
+            flash('You have not logged in yet. Retry to login again', 'unlogged-in')
+            return redirect(url_for("login"))
         else:
-            return render_template("forgot-password.html")
-
-@app.route('/reset-password/<token>', methods=["GET", "POST"])
-def reset_password(token:str):
-    if (current_user.is_authenticated):
-        return redirect(url_for("fhost"))
-    else:
-        user = User.verify_reset_password_token(token, type_token="reset-password")
-        if user is None:
-            flash('TOKEN IS INVALID OR EXPIRED.', 'invalid-reset-token')
-            return redirect(url_for("forgot_password"))
-
-        if request.method == "POST":
-            new_password = request.form.get('password')
-            if new_password is None:
-                abort(400)
             try:
-                # create new user with the form data. Hash the password so plaintext version isn't saved.
-                user.change_password(new_password)
-                # add the new user to the database
-                db.session.commit()
-                flash("Password changed successfully", 'change-password-successfully')
-                return redirect(url_for("login"))
+                token = current_user.get_reset_password_token(app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]*60, "activate-account");
+                send_email(subject="Activate your ZXZ account",
+                            sender=app.config["MAIL_USERNAME"],
+                            recipients=[current_user.email], text_body="HELLO",
+                            html_body=render_template("email-activate-account.html", token=token, expires_in=app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]))
+                return {"status": "OK"}
             except Exception as e:
                 print(e)
-                abort(500)
-        else:
-            flash(user.email, 'email')
-            flash(user.username, 'username')
-            return render_template("reset-password.html", token=token)
+                abort(HTTPStatus.INTERNAL_SERVER_ERROR)
+
+@app.route('/activate-account/<token>', methods=["GET"])
+def activate_account(token):
+    user = User.verify_reset_password_token(token, type_token="activate-account")
+    if user is None:
+        flash('TOKEN IS INVALID OR EXPIRED.', 'invalid-activate-token')
+        return redirect(url_for("fhost"))
+    elif user.is_confirmed:
+        flash('ACCOUNT WAS ACTIVATED SUCCESSFULLY.', 'account-activated')
+        return render_template("activate-account-success.html")
+    else:
+        user.confirm_email()
+        db.session.commit()
+        flash('ACCOUNT WAS ACTIVATED SUCCESSFULLY.', 'account-activated')
+        return render_template("activate-account-success.html")
+
+@app.route('/forgot-password', methods=["GET", "POST"])
+@logout_required
+def forgot_password():
+    if request.method == "POST":
+        email = request.form.get('email').strip()
+        user = User.query.filter_by(email=email).first()
+        if user is None:
+            flash(email, 'email')
+            flash('Email address has not unregistered yet.', 'unregistered')
+            return redirect(url_for("signup"))
+        token = user.get_reset_password_token(app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"]*60, type_token="reset-password")
+        # return render_template("email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"])
+        try:
+            send_email(subject="Reset your ZXZ account password",
+                        sender=app.config["MAIL_USERNAME"],
+                        recipients=[email], text_body="HELLO",
+                        html_body=render_template("email-reset-password.html", token=token, expires_in=app.config["RESET_PASSWORD_TOKEN_EXPIRES_IN"]))
+            flash('Reset password request sent. Check your email.', 'mail-sent')
+            flash(email, 'fill-email')
+            return redirect(url_for("login"))
+        except Exception as e:
+            abort(HTTPStatus.INTERNAL_SERVER_ERROR)
+    else:
+        return render_template("forgot-password.html")
+
+@app.route('/reset-password/<token>', methods=["GET", "POST"])
+@logout_required
+def reset_password(token:str):
+    user = User.verify_reset_password_token(token, type_token="reset-password")
+    if user is None:
+        flash('TOKEN IS INVALID OR EXPIRED.', 'invalid-reset-token')
+        return redirect(url_for("forgot_password"))
+
+    if request.method == "POST":
+        new_password = request.form.get('password')
+        if new_password is None:
+            abort(400)
+        try:
+            # create new user with the form data. Hash the password so plaintext version isn't saved.
+            user.change_password(new_password)
+            # add the new user to the database
+            db.session.commit()
+            flash("Password has been successfully reset", 'change-password-successfully')
+            return redirect(url_for("login"))
+        except Exception as e:
+            print(e)
+            abort(500)
+    else:
+        flash(user.email, 'email')
+        flash(user.username, 'username')
+        return render_template("reset-password.html", token=token)
 
 @app.route('/login', methods=["GET", "POST"])
+@logout_required
 def login():
     if request.method == "POST":
         user_info = request.form.get('user_info').strip()
@@ -685,18 +771,17 @@ def login():
 
         # if the above check passes, then we know the user has the right credentials
         login_user(user, remember=remember)
+        flash("Welcome", 'logged-in')
         return redirect(url_for("fhost"))
     else:
-        if (current_user.is_authenticated):
-            return redirect(url_for("fhost"))
+        if db.session.query(User).count() <= 1:
+            flash("", 'first-user')
+            return redirect(url_for('signup'))
         else:
-            if db.session.query(User).count() <= 1:
-                flash("", 'first-user')
-                return redirect(url_for('signup'))
-            else:
-                return render_template("login.html")
+            return render_template("login.html")
 
 @app.route('/signup', methods=["GET", "POST"])
+@logout_required
 def signup():
     if request.method == "POST":
         username = request.form.get('username').strip()
@@ -729,17 +814,26 @@ def signup():
             db.session.add(new_user)
             db.session.commit()
             flash(username, 'signup-successfully')
-            return redirect(url_for('login'))
+            token = new_user.get_reset_password_token(app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]*60, type_token="activate-account")
+
+            try:
+                send_email(subject="Activate your ZXZ account",
+                            sender=app.config["MAIL_USERNAME"],
+                            recipients=[email], text_body="HELLO",
+                            html_body=render_template("email-activate-account.html", token=token, expires_in=app.config["ACTIVATE_EMAIL_TOKEN_EXPIRES_IN"]))
+                flash('Activate account request sent. Check your email.', 'mail-sent')
+            except Exception as e:
+                print(e)
+    
+            flash(email, 'fill-email')
+            return redirect(url_for("login"))
         except Exception as e:
             print(e)
             abort(500)
     else:
-        if (current_user.is_authenticated):
-            return redirect(url_for("fhost"))
-        else:
-            if db.session.query(User).count() <= 1:
-                flash("", 'first-user')
-            return render_template('signup.html')
+        if db.session.query(User).count() <= 1:
+            flash("", 'first-user')
+        return render_template('signup.html')
 
 @app.route('/logout', methods=["GET", "POST"])
 @login_required
@@ -749,11 +843,13 @@ def logout():
 
 @app.route('/profile', methods=["GET", "POST"])
 @login_required
+@activate_required
 def profile():
     return render_template("profile.html")
 
 @app.route('/change-password', methods=["POST"])
 @login_required
+@activate_required
 def change_password():
     if request.method == "POST":
         current_password = request.form.get('current-password')
@@ -773,9 +869,10 @@ def change_password():
             abort(500)
     else:
         abort(403)
-        
+
 @app.route('/delete-account', methods=["POST"])
 @login_required
+@activate_required
 def delete_account():
     if request.method == "POST":
         password = request.form.get('password')
@@ -797,6 +894,7 @@ def delete_account():
 
 @app.route('/update-profile', methods=["POST"])
 @login_required
+@activate_required
 def update_profile():
     user = User.query.get_or_404(current_user.id)
     if request.method == "POST":
@@ -838,6 +936,7 @@ def update_profile():
 
 @app.route("/<path:path>", methods=["GET", "POST"])
 @app.route("/s/<secret>/<path:path>", methods=["GET", "POST"])
+@activate_required
 def get(path, secret=None):
     try:
         p = Path(path.split("/", 1)[0])
@@ -893,11 +992,8 @@ def get(path, secret=None):
         abort(500)
 
 @app.route("/", methods=["GET", "POST"])
+@activate_required
 def fhost():
-    # msg = Message("TEst email", sender="noreply@zxz.com", recipients=["luongtandat.m0145@gmail.com"])
-    # msg.body = 'text body'
-    # msg.html = '<h1>HTML body</h1>'
-    # mail.send(msg)
     if request.method == "POST":
         sf = None
         if "file" in request.files:
@@ -948,6 +1044,7 @@ def fhost():
         return render_template("index.html")
 
 @app.route('/fetch-content', methods=["POST"])
+@activate_required
 def fetch_content():
     if request.method == "POST":
         url = request.form["url"]
