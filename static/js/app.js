@@ -9,23 +9,23 @@ var fetchDataLongPressed = false;
 
 $(document).ready(function () {
     editor = CodeMirror.fromTextArea(document.getElementById('text-editor'), {
-       lineNumbers: true,
-       mode: 'text',
-       lineWrapping: true,
-       indentUnit: 4,
-       matchBrackets: true
+        lineNumbers: true,
+        mode: 'text',
+        lineWrapping: true,
+        indentUnit: 4,
+        matchBrackets: true
     });
 });
 
-document.addEventListener("DOMContentLoaded", function() {
-    document.getElementById("file").addEventListener("change", function(event) {
+document.addEventListener("DOMContentLoaded", function () {
+    document.getElementById("file").addEventListener("change", function (event) {
         // var selectedFile = event.target.files[0];
         if (validateFileSelection()) {
             clearResponseDiv("response");
         }
     });
 
-    document.getElementById("shorten").addEventListener("change", function(event) {
+    document.getElementById("shorten").addEventListener("change", function (event) {
         // var shortenUrl = event.target.value;
         if (validateShortenUrlInput()) {
             clearResponseDiv("response-shorten-url");
@@ -100,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // Update the tooltip every minute
     setInterval(function () {
         var codeElement = document.getElementById("response-code-response"); // "response-code-" + responseDivId;
-        if (codeElement!==null) {
+        if (codeElement !== null) {
             if (codeElement.getAttribute("title") !== "Link is not available") {
                 codeElement.setAttribute("title", formatTimeDifference(codeElement.getAttribute("data-x-expires")));
             }
@@ -116,12 +116,12 @@ document.addEventListener("DOMContentLoaded", function() {
     document.getElementById("get-data-from-url").addEventListener("mouseleave", cancelLongPress);
     document.getElementById("get-data-from-url").addEventListener("touchcancel", cancelLongPress);
     // Add event listeners for drag and drop to the document
-    document.addEventListener("dragover", function(event) {
+    document.addEventListener("dragover", function (event) {
         // Prevent the default behavior to allow dropping
         event.preventDefault();
     });
 
-    document.addEventListener("drop", function(event) {
+    document.addEventListener("drop", function (event) {
         // Prevent the default behavior to allow dropping
         event.preventDefault();
         // Get the dropped files from the event data
@@ -180,11 +180,76 @@ document.addEventListener("DOMContentLoaded", function() {
     document.querySelector('a[href="#text-editor-sect"]').addEventListener("click", scrollIntoView);
     document.querySelector('a[href="#operator-notes"]').addEventListener("click", scrollIntoView);
     document.querySelector('a[href="#file-retention-period"]').addEventListener("click", scrollIntoView);
+
+    // Get references to input elements and their corresponding buttons
+    const inputElements = document.querySelectorAll('input[type="text"]');
+    const pasteButtons = document.querySelectorAll('.clipboard-btn');
+    // Add event listeners to the input fields
+    inputElements.forEach((input, index) => {
+        pasteButtons[index].onclick = async function () {
+            const button = pasteButtons[index];
+            const icon = button.querySelector('i');
+            if (input.value === "") {
+                // navigator.clipboard.readText()
+                //     .then(text => {
+                //         // Assign the text to the text field
+                //         input.value = text;
+                //     })
+                //     .catch(err => {
+                //         console.error('Failed to read clipboard contents: ', err);
+                //     });
+                // icon.className = 'bi bi-ban';
+                // button.classList.add("btn-outline-danger");
+                // button.classList.remove("btn-outline-secondary");
+            } else {
+                input.value = "";
+                icon.className = 'bi bi-clipboard';
+                button.classList.add("btn-outline-secondary");
+                button.classList.remove("btn-outline-danger");
+            }
+
+        };
+
+        input.addEventListener('blur', () => {
+            const button = pasteButtons[index];
+            const icon = button.querySelector('i');
+            // Check if the input field is empty
+            if (input.value.trim() === '') {
+                // Change icon to clipboard if input is empty
+                icon.className = 'bi bi-clipboard';
+                button.classList.add("btn-outline-secondary");
+                button.classList.remove("btn-outline-danger");
+            } else {
+                // Change icon to trash if input is not empty
+                icon.className = 'bi bi-ban';
+                button.classList.add("btn-outline-danger");
+                button.classList.remove("btn-outline-secondary");
+            }
+        });
+    });
+
+    flashMessageLoggedIn = document.getElementById('flash-message-logged-in');
+    if (flashMessageLoggedIn) {
+        // Now you can use 'category' and 'message' as needed
+        insertMessageIntoToast("Logged In", flashMessageLoggedIn.dataset.message, "success");
+    }
+
+    flashMessageInvalidActivateToken = document.getElementById('flash-message-invalid-activate-token');
+    if (flashMessageInvalidActivateToken) {
+        // Now you can use 'category' and 'message' as needed
+        insertMessageIntoToast("Invalid Activate Token", flashMessageInvalidActivateToken.dataset.message, "danger");
+    }
+
+    flashMessageAccountActivated = document.getElementById('flash-message-account-activated');
+    if (flashMessageAccountActivated) {
+        // Now you can use 'category' and 'message' as needed
+        insertMessageIntoToast("Your accoun", flashMessageAccountActivated.dataset.message, "success");
+    }
 });
 
 function startLongPress(event) {
-    event.preventDefault();
-    longPressTimer = setTimeout(function() {
+    // event.preventDefault();
+    longPressTimer = setTimeout(function () {
         // Long press detected, initiate the file download
         getFileFromUrl(true);
         fetchDataLongPressed = true;
@@ -192,7 +257,7 @@ function startLongPress(event) {
 }
 
 function endLongPress(event) {
-    event.preventDefault();
+    // event.preventDefault();
     clearTimeout(longPressTimer);
     if (!fetchDataLongPressed) {
         getFileFromUrl(false);
@@ -201,7 +266,7 @@ function endLongPress(event) {
 }
 
 function cancelLongPress(event) {
-    event.preventDefault();
+    // event.preventDefault();
     clearTimeout(longPressTimer);
     fetchDataLongPressed = false;
 }
@@ -213,7 +278,7 @@ function scrollIntoView(event) {
     var targetSection = document.getElementById(targetId);
     if (targetSection) {
         // Calculate the offset position of the target element from the top of the page
-        var offsetPosition = targetSection.offsetTop - ((targetId==="the-null-pointer") ? 60 : 0);
+        var offsetPosition = targetSection.offsetTop - ((targetId === "the-null-pointer") ? 60 : 0);
         // Scroll to the target element with the offset position
         window.scrollTo({
             top: offsetPosition,
@@ -231,15 +296,19 @@ function datetimeToTimestamp(dateString) {
 function toggleSecret() {
     var secretInput = document.getElementById("secret");
     var enableSecretCheckbox = document.getElementById("enableSecret");
+    var pastingSecret = document.getElementById("pasting-secret-btn")
     secretInput.disabled = !enableSecretCheckbox.checked;
+    pastingSecret.disabled = !enableSecretCheckbox.checked;
 }
 
 function toggleExpiration() {
     var expiresInput = document.getElementById('expires');
     var datetimeInput = document.getElementById('datetimepicker');
     var enableExpirationCheckbox = document.getElementById("enableExpiration");
+    var pastingDatetimepicker = document.getElementById("pasting-datetimepicker-btn");
     expiresInput.disabled = !enableExpirationCheckbox.checked;
     datetimeInput.disabled = !enableExpirationCheckbox.checked;
+    pastingDatetimepicker.disabled = !enableExpirationCheckbox.checked;
 }
 
 function validateFileSelection() {
@@ -295,7 +364,7 @@ function submitForm() {
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/", true);
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             var checkHttp = checkHttpStatus(xhr, "response")
             if (checkHttp) {
@@ -306,7 +375,7 @@ function submitForm() {
                     $("#check-submit").attr("class", "check check-complete");
                     $("#fill-submit").attr("class", "fill fill-complete");
                 }, 100, Date.now(), checkHttp);
-                checkmarkSubmitSuccessTimer = setTimeout(function (timestamp,checkHttp) {
+                checkmarkSubmitSuccessTimer = setTimeout(function (timestamp, checkHttp) {
                     if ((timestamp < submitTimerMaxTime) || !checkHttp) {
                         return;
                     }
@@ -314,7 +383,7 @@ function submitForm() {
                     $("#fill-submit").attr("class", "fill fill-complete success");
                     $("#path-submit").attr("class", "path path-complete");
                 }, 300, Date.now(), checkHttp);
-                hideCheckmarkSubmitTimer = setTimeout(function (timestamp,checkHttp) {
+                hideCheckmarkSubmitTimer = setTimeout(function (timestamp, checkHttp) {
                     if ((timestamp < submitTimerMaxTime) || !checkHttp) {
                         return;
                     }
@@ -328,7 +397,7 @@ function submitForm() {
         }
         submitButton.disabled = false;
     };
-    xhr.onerror = function() {
+    xhr.onerror = function () {
         // Handle error
         checkmarkSubmitElement.classList.remove("show");
         checkmarkSubmitElement.classList.add("hide");
@@ -382,7 +451,7 @@ function submitShortenUrl() {
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/", true);
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             var checkHttp = checkHttpStatus(xhr, "response-shorten-url");
             if (checkHttp) {
@@ -415,7 +484,7 @@ function submitShortenUrl() {
         }
         submitButton.disabled = false;
     };
-    xhr.onerror = function() {
+    xhr.onerror = function () {
         // Handle error
         checkmarkElement.classList.remove("show");
         checkmarkElement.classList.add("hide");
@@ -485,7 +554,7 @@ function submitScript() {
 
     var xhr = new XMLHttpRequest();
     xhr.open("POST", "/", true);
-    xhr.onreadystatechange = function() {
+    xhr.onreadystatechange = function () {
         if (xhr.readyState === XMLHttpRequest.DONE) {
             var checkHttp = checkHttpStatus(xhr, "response-script")
             if (checkHttp) {
@@ -518,7 +587,7 @@ function submitScript() {
         }
         submitButton.disabled = false;
     };
-    xhr.onerror = function() {
+    xhr.onerror = function () {
         // Handle error
         checkmarkSubmitElement.classList.remove("show");
         checkmarkSubmitElement.classList.add("hide");
@@ -549,8 +618,8 @@ function getFileFromUrl(fetch_file) {
     var downloadLink = document.getElementById("download-url").value;
     downloadLink.disabled = true;
 
-    if (downloadLink === "" ||  downloadLink === null) {
-        alert("Enter valide URL");
+    if (downloadLink === "" || downloadLink === null) {
+        insertMessageIntoToast("Attention", "Enter valide URL", "info")
         return;
     }
     try {
@@ -612,12 +681,12 @@ function getFileFromUrl(fetch_file) {
                 }, 3500, downloadFromUrlTimerMaxTime);
             } else if (xhr.readyState === 4) {
                 // Request failed
-                alert("There was a problem with the fetch operation: " + xhr.status + " - " + xhr.statusText);
+                insertMessageIntoToast("Request failed", "There was a problem with the fetch operation: " + xhr.status + " - " + xhr.statusText, "error")
                 checkmarkElement.classList.remove("show");
                 checkmarkElement.classList.add("hide");
             }
         };
-        xhr.onerror = function() {
+        xhr.onerror = function () {
             // Handle error
             checkmarkElement.classList.remove("show");
             checkmarkElement.classList.add("hide");
@@ -625,7 +694,7 @@ function getFileFromUrl(fetch_file) {
         // Send the POST request
         xhr.send(formData);
     } catch (error) {
-        alert("Invalid download link", error);
+        insertMessageIntoToast("Invalid download link", error, "error")
     }
     downloadLink.disabled = false;
 }
@@ -657,7 +726,7 @@ function checkHttpStatus(xhr, responseDivId) {
         showResponse("451 Unavailable For Legal Reasons", xhr.status, responseDivId, xhr);
     } else if (xhr.status === 500) {
         showResponse("500 Internal Server Error", xhr.status, responseDivId, xhr);
-    }  else {
+    } else {
         showResponse("ERROR CODE" + xhr.status, xhr.status, responseDivId, xhr);
     }
     return false;
@@ -675,12 +744,12 @@ function formatTimeDifference(timestamp) {
     var formattedTime = "";
 
     if (days > 0) {
-        formattedTime += days + ((days===1) ? " day " : " days ");
+        formattedTime += days + ((days === 1) ? " day " : " days ");
     }
     if (hours > 0 || days > 0) {
-        formattedTime += hours + ((hours===1) ? " hour " : " hours ");
+        formattedTime += hours + ((hours === 1) ? " hour " : " hours ");
     }
-    formattedTime += minutes + ((minutes===1) ? " minute " : " minutes ");
+    formattedTime += minutes + ((minutes === 1) ? " minute " : " minutes ");
 
     if (timeDifference < 0) {
         formattedTime = "Expired " + formattedTime + "ago, on " + (new Date(parseInt(timestamp)).toString());
@@ -702,7 +771,7 @@ function showResponse(text, statusCode, responseDivId, xhr) {
     codeElement.textContent = text
     codeElement.className = "response-code";// + responseDivId;
     codeElement.id = "response-code-" + responseDivId;
-    if (xExpiresHeader!==null) {
+    if (xExpiresHeader !== null) {
         codeElement.setAttribute("data-bs-toggle", "tooltip");
         codeElement.setAttribute("data-bs-placement", "top");
         codeElement.setAttribute("title", formatTimeDifference(xExpiresHeader));
@@ -725,7 +794,7 @@ function addRemoveButton(url, responseDivId, xTokenHeader) {
     var button = document.createElement("button");
     button.className = "btn btn-danger ms-2";
     button.id = "remote-button-" + responseDivId;
-    button.innerHTML  = '<i class="bi bi-trash"></i>';
+    button.innerHTML = '<i class="bi bi-trash"></i>';
     button.onclick = function () {
         button.disabled = true;
         // Construct form data
@@ -737,32 +806,32 @@ function addRemoveButton(url, responseDivId, xTokenHeader) {
             method: 'POST',
             body: formData
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            button.className = "btn btn-secondary ms-2";
-            var copyButton = document.getElementById("copy-button-" + responseDivId);
-            copyButton.className = "btn btn-secondary ms-2";
-            copyButton.disabled = true;
-            var urlInNewTabButton = document.getElementById("url-in-new-tab-button-" + responseDivId);
-            urlInNewTabButton.className = "btn btn-secondary ms-2";
-            urlInNewTabButton.disabled = true;
-            var scanQrCodeButton = document.getElementById("scan-qr-code-button-" + responseDivId);
-            scanQrCodeButton.className = "btn btn-secondary ms-2";
-            scanQrCodeButton.disabled = true;
-            var responseDiv = document.getElementById(responseDivId);
-            responseDiv.className = "mt-3 alert alert-secondary d-flex justify-content-between align-items-center";
-            var codeElement = document.getElementById("response-code-" + responseDivId);
-            codeElement.style.textDecoration = "line-through";
-            codeElement.style.color = "#41464b"
-            codeElement.setAttribute("title", "Link is not available");
-            alert('Delete request successful');
-        })
-        .catch(error => {
-            alert('Error during delete request: ' + error);
-            button.disabled = false;
-        });
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                button.className = "btn btn-secondary ms-2";
+                var copyButton = document.getElementById("copy-button-" + responseDivId);
+                copyButton.className = "btn btn-secondary ms-2";
+                copyButton.disabled = true;
+                var urlInNewTabButton = document.getElementById("url-in-new-tab-button-" + responseDivId);
+                urlInNewTabButton.className = "btn btn-secondary ms-2";
+                urlInNewTabButton.disabled = true;
+                var scanQrCodeButton = document.getElementById("scan-qr-code-button-" + responseDivId);
+                scanQrCodeButton.className = "btn btn-secondary ms-2";
+                scanQrCodeButton.disabled = true;
+                var responseDiv = document.getElementById(responseDivId);
+                responseDiv.className = "mt-3 alert alert-secondary d-flex justify-content-between align-items-center";
+                var codeElement = document.getElementById("response-code-" + responseDivId);
+                codeElement.style.textDecoration = "line-through";
+                codeElement.style.color = "#41464b"
+                codeElement.setAttribute("title", "Link is not available");
+                insertMessageIntoToast("Successful", "Delete request successful", "info")
+            })
+            .catch(error => {
+                insertMessageIntoToast("Delete Error", 'Error during delete request: ' + error, "error")
+                button.disabled = false;
+            });
     };
     var buttonContainer = document.getElementById("button-container-" + responseDivId);
     buttonContainer.appendChild(button);
@@ -787,9 +856,9 @@ function addButtons(text, responseDivId, xTokenHeader) {
 function addCopyButton(text, responseDivId) {
     var button = document.createElement("button");
     button.className = "btn btn-success ms-2";
-    button.innerHTML  = '<i class="bi bi-copy"></i>';
+    button.innerHTML = '<i class="bi bi-copy"></i>';
     button.id = "copy-button-" + responseDivId;
-    button.onclick = function () {copyToClipboard(text);};
+    button.onclick = function () { copyToClipboard(text); };
     var buttonContainer = document.getElementById("button-container-" + responseDivId);
     buttonContainer.appendChild(button);
 }
@@ -802,16 +871,16 @@ function copyToClipboard(text) {
     textarea.select();
     document.execCommand("copy");
     document.body.removeChild(textarea);
-    alert("Copied to clipboard: " + text);
+    insertMessageIntoToast("Successful", "Copied to clipboard: " + text, "info")
 }
 
 // Function to add a button that open url in new tab
 function addUrlInNewTabButton(url, responseDivId) {
     var button = document.createElement("button");
     button.className = "btn btn-info ms-2";
-    button.innerHTML  = '<i class="bi bi-globe2"></i>';
+    button.innerHTML = '<i class="bi bi-globe2"></i>';
     button.id = "url-in-new-tab-button-" + responseDivId;
-    button.onclick = function () {openUrlInNewTab(url);};
+    button.onclick = function () { openUrlInNewTab(url); };
     var buttonContainer = document.getElementById("button-container-" + responseDivId);
     buttonContainer.appendChild(button);
 }
@@ -826,7 +895,7 @@ function addScanQrCodeButton(text, responseDivId) {
     var button = document.createElement("button");
     button.className = "btn btn-warning ms-2";
     button.id = "scan-qr-code-button-" + responseDivId;
-    button.innerHTML  = '<i class="bi bi-qr-code-scan"></i>';
+    button.innerHTML = '<i class="bi bi-qr-code-scan"></i>';
     button.setAttribute("data-bs-toggle", "modal");
     button.setAttribute("data-bs-target", "#qrCodeModal-" + responseDivId);
     var buttonContainer = document.getElementById("button-container-" + responseDivId);

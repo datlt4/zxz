@@ -1,5 +1,5 @@
 // category in [danger, info, warning, success]
-function insertMessageIntoToast(header, text, category) {
+function insertMessageIntoToast(header, text, category, timeout = 6660) {
     // Create a new toast element
     var toastElement = document.createElement('div');
     toastElement.classList.add('toast', 'mb-2');
@@ -12,7 +12,7 @@ function insertMessageIntoToast(header, text, category) {
     var toastHeader = document.createElement('div');
     toastHeader.classList.add('toast-header', category);
     toastHeader.innerHTML = `
-        <strong class="me-auto">` +  header + `</strong>
+        <strong class="me-auto">` + header + `</strong>
         <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
     `;
 
@@ -36,12 +36,12 @@ function insertMessageIntoToast(header, text, category) {
 
     // Show the toast
     bsToast.show();
-    var toastTimer = setTimeout(function() {bsToast.hide()}, 6660);
+    var toastTimer = setTimeout(function () { bsToast.hide() }, timeout);
 
     toastElement.classList.add('toast', 'mb-2');
     var closeButton = toastElement.querySelector(".btn-close");
-        closeButton.addEventListener("click", function(){
-            clearTimeout(toastTimer);
-            bsToast.hide();
+    closeButton.addEventListener("click", function () {
+        clearTimeout(toastTimer);
+        bsToast.hide();
     });
 }

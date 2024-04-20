@@ -12,21 +12,25 @@
 }
 
 #content-wrap {
-    padding-bottom: 2.5rem;    /* Footer height */
+    padding-bottom: 2.5rem;
+    /* Footer height */
 }
 
 .footer {
-    background-color: #343a40; /* Dark color similar to the header */
+    background-color: #343a40;
+    /* Dark color similar to the header */
     padding: 20px 0;
     text-align: center;
-    color: #fff; /* White text color */
+    color: #fff;
+    /* White text color */
     /* position: absolute; */
     bottom: 0;
     width: 100%;
 }
 
 .footer p {
-    margin-bottom: 5px; /* Add some spacing between paragraphs */
+    margin-bottom: 5px;
+    /* Add some spacing between paragraphs */
 }
 
 /* Ensure content is pushed down when header and footer are fixed */
@@ -38,7 +42,8 @@ body {
     display: flex;
     flex-direction: column;
     margin: 0;
-    min-height: 100vh; /* Ensure the body takes up at least the full viewport height */
+    min-height: 100vh;
+    /* Ensure the body takes up at least the full viewport height */
 }
 
 input:disabled {
@@ -46,7 +51,7 @@ input:disabled {
 }
 
 input:hover {
-    border-color: #0250b7    !important;
+    border-color: #0250b7 !important;
 }
 
 hr {
@@ -64,12 +69,14 @@ hr {
 
 /* Add some margin to the bottom of the body content */
 .content {
-    margin-bottom: 70px; /* Height of the footer */
+    margin-bottom: 70px;
+    /* Height of the footer */
 }
 
 /* Add some spacing to top of content to account for fixed header */
 .content {
-    padding-top: 80px; /* Height of the fixed header + some extra spacing */
+    padding-top: 80px;
+    /* Height of the fixed header + some extra spacing */
 }
 
 .container {
@@ -152,18 +159,24 @@ li:before {
 }
 
 .show {
-    display: block; /* Display the checkmark when it has the 'show' class */
-    opacity: 1; /* Ensure the checkmark is fully visible */
-    transition: opacity 0.3s linear; /* Add transition effect for opacity */
+    display: block;
+    /* Display the checkmark when it has the 'show' class */
+    opacity: 1;
+    /* Ensure the checkmark is fully visible */
+    transition: opacity 0.3s linear;
+    /* Add transition effect for opacity */
 }
 
 .hide {
-    opacity: 0; /* Set opacity to 0 when hiding */
-    transition: opacity 0.2s linear; /* Add transition effect for opacity */
+    opacity: 0;
+    /* Set opacity to 0 when hiding */
+    transition: opacity 0.2s linear;
+    /* Add transition effect for opacity */
 }
 
 .CodeMirror {
-    font-size: 11px; /* Adjust the font size as needed */
+    font-size: 11px;
+    /* Adjust the font size as needed */
 }
 
 .nav-btn {
@@ -217,13 +230,15 @@ li:before {
 }
 
 .bi-person {
-    font-size: 18px; /* Adjust icon size as needed */
+    font-size: 18px;
+    /* Adjust icon size as needed */
 }
 
 /* Popup container - can be anything you want */
 .user-avatar-container {
     position: relative;
 }
+
 /* The actual popup */
 .popup-profile {
     visibility: hidden;
@@ -264,7 +279,8 @@ li:before {
 
 .user-profile-btn {
     background-color: #373b3e;
-    align-items: center; /* Center items vertically */
+    align-items: center;
+    /* Center items vertically */
     text-align: left;
     color: #ffffff;
     border-color: transparent;
@@ -278,13 +294,23 @@ li:before {
 
 /* Add animation (fade in the popup) */
 @-webkit-keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity: 1;}
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.5;
+    }
 }
 
 @keyframes fadeIn {
-    from {opacity: 0;}
-    to {opacity:1 ;}
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 0.5;
+    }
 }
 
 .accordion-button {
@@ -319,43 +345,59 @@ input.form-control {
 
 /* Customize the button styles */
 .btn-outline-primary.custom-btn {
-    color: #3b5482; /* Text color */
-    border-color: #3b5482; /* Border color */
+    color: #3b5482;
+    /* Text color */
+    border-color: #3b5482;
+    /* Border color */
 }
 
 .btn-outline-primary.custom-btn:hover {
-    color: #fff; /* Text color on hover */
-    background-color: #3b5482; /* Background color on hover */
-    border-color: #3b5482; /* Border color on hover */
+    color: #fff;
+    /* Text color on hover */
+    background-color: #3b5482;
+    /* Background color on hover */
+    border-color: #3b5482;
+    /* Border color on hover */
 }
 
 .btn-outline-primary.custom-btn {
-    color: #3b5482; /* Text color */
-    border-color: #3b5482; /* Border color */
+    color: #3b5482;
+    /* Text color */
+    border-color: #3b5482;
+    /* Border color */
 }
 
 .btn-outline-primary.custom-btn:hover {
-    color: #fff; /* Text color on hover */
-    background-color: #3b5482; /* Background color on hover */
-    border-color: #3b5482; /* Border color on hover */
+    color: #fff;
+    /* Text color on hover */
+    background-color: #3b5482;
+    /* Background color on hover */
+    border-color: #3b5482;
+    /* Border color on hover */
 }
 
 .btn-primary.custom-btn:focus {
-    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5); /* Custom focus shadow */
+    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5);
+    /* Custom focus shadow */
 }
 
 .btn-primary.custom-btn {
-    background-color: #3b5482; /* Background color */
-    border-color: #3b5482; /* Border color */
+    background-color: #3b5482;
+    /* Background color */
+    border-color: #3b5482;
+    /* Border color */
 }
 
 .btn-primary.custom-btn:hover {
-    background-color: #2a3e5f; /* Darker background color on hover */
-    border-color: #2a3e5f; /* Darker border color on hover */
+    background-color: #2a3e5f;
+    /* Darker background color on hover */
+    border-color: #2a3e5f;
+    /* Darker border color on hover */
 }
 
 .btn-primary.custom-btn:focus {
-    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5); /* Custom focus shadow */
+    box-shadow: 0 0 0 0.25rem rgba(59, 84, 130, 0.5);
+    /* Custom focus shadow */
 }
 
 .toast-header.danger {
@@ -400,4 +442,8 @@ input.form-control {
     background-color: #b5945d;
     color: #e8e2d8;
     border-radius: 0 0 5px 5px;
+}
+
+.clipboard-btn:disabled {
+    background-color: #f8f9fa !important;
 }

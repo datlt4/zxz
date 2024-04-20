@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block title %}Activate account | nullptr{% endblock %}
+
+{% block content %}
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div id="flash-message-{{ category }}" data-category="{{ category }}" data-message="{{ message }}"></div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+
+<div class="row justify-content-center">
+    <div class="col-md-8 mb-5 border rounded-4 p-3">
+        <h2 class="mt-3 mb-4 d-flex align-items-center justify-content-center">
+            <span>Activate Your Account</span>
+            <a class="anchorjs-link " aria-label="Anchor" data-anchorjs-icon="#" href="#login" style="padding-left: 0.375em;"></a>
+        </h2>
+        <div class="row">
+            <div class="offset-md-1 col-md-10 mt-5 mb-5 indented-content">
+                <p style="color: #665c78; font-size: 16px" class="mb-3 d-flex">Your account is not activated yet.</p>
+                <p style="color: #665c78; font-size: 16px" class="mb-3 d-flex">Please check your email, including your spam folder, for the activation email that has been sent.</p>
+                <p style="color: #665c78; font-size: 16px" class="mb-3 d-flex">If the email has expired or encountered an error during sending, please retry with the instructions below.</p>
+            </div>
+            <div class="offset-md-3 col-md-6 mb-4 indented-content">
+                <div class="mb-3 d-flex align-items-center justify-content-center">
+                    <button id="send-email" type="button" class="btn btn-primary custom-btn w-100" onclick="requestEmailToActivate()">Send Email to Activate Account</button>
+                </div>
+            </div>
+        </div>
+        {% include "common/toast-template.html" %}
+    </div>
+</div>
+
+
+<!-- Customize JS -->
+<script src="{{ url_for('static', filename='js/auth/activate-account.js') }}"></script>
+{% endblock %}
