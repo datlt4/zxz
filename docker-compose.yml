@@ -14,11 +14,11 @@ volumes:
 
 services:
   zxz:
-    image: zxz:latest
+    image: hienanh/zxz:latest
     container_name: zxz
-    # build:
-    #   context: ./
-    #   dockerfile: Dockerfile
+    #build:
+    #  context: ./
+    #  dockerfile: Dockerfile
     env_file:
       - .env
     restart: always
