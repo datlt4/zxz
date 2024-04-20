@@ -809,6 +809,7 @@ def signup():
             new_user.activate_user()
             if db.session.query(User).count() <= 1:
                 new_user.set_admin_role()
+                new_user.confirm_email()
 
             # add the new user to the database
             db.session.add(new_user)
