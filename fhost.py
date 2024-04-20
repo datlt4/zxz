@@ -57,7 +57,7 @@ HTTP_URL_PATTERN = re.compile(r"(http[s]*://[\w.:]+)/?.*")
 EMAIL_ADDRESS_PATTERN = re.compile(r"^[\w. +-]+@[\w-]+\.[\w.-]+$")
 
 app = Flask(__name__, instance_relative_config=True)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, support_credentials=True, resources={r"/api/*": {"origins": "*"}})
 app.secret_key = sha256(str(time.time()).encode("utf-8")).hexdigest()
 app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
