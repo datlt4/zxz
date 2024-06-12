@@ -1059,12 +1059,12 @@ def fetch_content():
     if request.method == "POST":
         url = request.form["url"]
         if len(HTTP_URL_PATTERN.findall(url))==0:
-            url = os.path.join("http://localhost:5000", url)
+            url = os.path.join(f"http://localhost:{request.environ.get('SERVER_PORT')}", url)
         else:
             base_url = HTTP_URL_PATTERN.findall(request.url)
             if len(base_url) > 0:
                 base_url = base_url[0]
-                url = url.replace(base_url, "http://localhost:5000")
+                url = url.replace(base_url, f"http://localhost:{request.environ.get('SERVER_PORT')}")
 
         if not request.url:
             return jsonify({"error": "URL parameter is required"}), 400
@@ -1084,12 +1084,12 @@ def fetch_file():
     if request.method == "POST":
         url = request.form["url"]
         if len(HTTP_URL_PATTERN.findall(url))==0:
-            url = os.path.join("http://localhost:5000", url)
+            url = os.path.join(f"http://localhost:{request.environ.get('SERVER_PORT')}", url)
         else:
             base_url = HTTP_URL_PATTERN.findall(request.url)
             if len(base_url) > 0:
                 base_url = base_url[0]
-                url = url.replace(base_url, "http://localhost:5000")
+                url = url.replace(base_url, f"http://localhost:{request.environ.get('SERVER_PORT')}")
 
         if not request.url:
             return jsonify({"error": "URL parameter is required"}), 400
