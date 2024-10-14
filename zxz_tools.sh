@@ -171,8 +171,6 @@ while [[ "$#" -gt 0 ]]; do
 done
 
 # Check docker-compose
-eval "which docker-compose"
-exit_with_error_code "$?" "docker-compose is not installed properly"
 eval "which docker"
 exit_with_error_code "$?" "docker is not installed properly"
 
@@ -211,8 +209,8 @@ if [ ${flag_DELETE_RESOURCE} -gt 0 ]; then
         esac
     done
 
-    print_with_color "$ docker-compose -f ${docker_compose_yml} down\n" "\033[36m"
-    eval "docker-compose -f ${docker_compose_yml} down"
+    print_with_color "$ docker compose -f ${docker_compose_yml} down\n" "\033[36m"
+    eval "docker compose -f ${docker_compose_yml} down"
     print_with_color "$ docker volume rm zxz_upload_volume\n" "\033[36m"
     eval "docker volume rm zxz_upload_volume"
     print_with_color "$ docker volume rm zxz_fhost_db_volume\n" "\033[36m"
@@ -222,15 +220,15 @@ fi
 
 # Restart server
 if [ ${flag_RESTART} -gt 0 ]; then
-    print_with_color "$ docker-compose -f ${docker_compose_yml} restart zxz\n" "\033[36m"
-    eval "docker-compose -f ${docker_compose_yml} restart zxz"
+    print_with_color "$ docker compose -f ${docker_compose_yml} restart zxz\n" "\033[36m"
+    eval "docker compose -f ${docker_compose_yml} restart zxz"
     exit 0
 fi
 
 # Stop server
 if [ ${flag_STOP_ZXZ} -gt 0 ] || [ ${flag_BACKUP} -gt 0 ] || [ ${flag_RESTORE} -gt 0 ]; then
-    print_with_color "$ docker-compose -f ${docker_compose_yml} stop\n" "\033[36m"
-    eval "docker-compose -f ${docker_compose_yml} stop"
+    print_with_color "$ docker compose -f ${docker_compose_yml} stop\n" "\033[36m"
+    eval "docker compose -f ${docker_compose_yml} stop"
     if [ ${flag_STOP_ZXZ} -gt 0 ]; then
         exit 0
     fi
@@ -239,8 +237,8 @@ fi
 # Backup/Restore server
 if [ ${flag_BACKUP} -gt 0 ]; then
     write_target_to_env ${target_BACKUP}
-    print_with_color "$ docker-compose -f ${docker_compose_yml} run --rm backup\n" "\033[36m"
-    eval "docker-compose -f ${docker_compose_yml} run --rm backup"
+    print_with_color "$ docker compose -f ${docker_compose_yml} run --rm backup\n" "\033[36m"
+    eval "docker compose -f ${docker_compose_yml} run --rm backup"
     print_with_color "$ ls -1t backup/ | tail -n+$((2 * N_BACKUP_KEEP + 1)) | xargs -I {} rm backup/{}\n" "\033[36m"
     eval "ls -1t backup/ | tail -n+$((2 * N_BACKUP_KEEP + 1)) | xargs -I {} rm backup/{}"
 elif [ ${flag_RESTORE} -gt 0 ]; then
@@ -253,8 +251,8 @@ elif [ ${flag_RESTORE} -gt 0 ]; then
         case $ans in
             [Yy]* )
                 write_target_to_env ${target_RESTORE}
-                print_with_color "$ docker-compose -f ${docker_compose_yml} run --rm restore\n" "\033[36m"
-                eval "docker-compose -f ${docker_compose_yml} run --rm restore"
+                print_with_color "$ docker compose -f ${docker_compose_yml} run --rm restore\n" "\033[36m"
+                eval "docker compose -f ${docker_compose_yml} run --rm restore"
                 break
                 ;;
             [Nn]* )
@@ -268,10 +266,10 @@ fi
 
 # Start server
 if [ ${flag_START_ZXZ} -gt 0 ] || [ ${flag_BACKUP} -gt 0 ] || [ ${flag_RESTORE} -gt 0 ]; then
-    command="docker-compose pull"
+    command="docker compose pull"
     print_with_color "$ ${command}\n" "\033[36m"
     eval "${command}"
-    command="docker-compose -f ${docker_compose_yml} up"
+    command="docker compose -f ${docker_compose_yml} up"
     if [ ${flag_BUILD} -gt 0 ]; then
         command="${command} --build --force-recreate"
     fi
