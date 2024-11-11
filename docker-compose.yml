@@ -14,7 +14,7 @@ services:
   zxz:
     image: hienanh/zxz:latest
     container_name: zxz
-    #build:
+    # build:
     #  context: ./
     #  dockerfile: Dockerfile
     hostname: zxz1
