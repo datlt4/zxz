@@ -5,3 +5,4 @@ instance/
 backup/
 uploads/
 fhost_db.sql/
+ssl/

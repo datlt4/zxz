@@ -220,8 +220,8 @@ fi
 
 # Restart server
 if [ ${flag_RESTART} -gt 0 ]; then
-    print_with_color "$ docker compose -f ${docker_compose_yml} restart zxz\n" "\033[36m"
-    eval "docker compose -f ${docker_compose_yml} restart zxz"
+    print_with_color "$ docker compose -f ${docker_compose_yml} restart zxz nginx\n" "\033[36m"
+    eval "docker compose -f ${docker_compose_yml} restart zxz nginx"
     exit 0
 fi
 
@@ -273,7 +273,7 @@ if [ ${flag_START_ZXZ} -gt 0 ] || [ ${flag_BACKUP} -gt 0 ] || [ ${flag_RESTORE} 
     if [ ${flag_BUILD} -gt 0 ]; then
         command="${command} --build --force-recreate"
     fi
-    command="${command} -d zxz"
+    command="${command} -d zxz nginx"
     print_with_color "$ ${command}\n" "\033[36m"
     eval "${command}"
 fi

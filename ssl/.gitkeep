@@ -1,0 +1,7 @@
+```bash
+# Generate a private key
+openssl genpkey -algorithm RSA -out /etc/nginx/ssl/nginx.key
+
+# Generate a self-signed certificate
+openssl req -new -x509 -key /etc/nginx/ssl/nginx.key -out /etc/nginx/ssl/nginx.crt -days 365
+```
