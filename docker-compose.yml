@@ -22,9 +22,8 @@ services:
       - .env
     restart: always
     volumes:
-      - upload_volume:/files
-      # - ./instance:/python-docker/instance
-      - fhost_db_volume:/python-docker/fhost_db.sql
+      - ${UPLOAD_VOLUME_PATH}:/files
+      - ${DB_VOLUME_PATH}:/python-docker/fhost_db.sql
     networks:
       - zxz_nginx_net
     # ports:
@@ -52,9 +51,9 @@ services:
     environment:
       - TARGET=${TARGET}
     volumes:
-      - upload_volume:/upload_data
-      - fhost_db_volume:/fhost_db_data
-      - ./backup:/backup
+      - ${UPLOAD_VOLUME_PATH}:/upload_data
+      - ${DB_VOLUME_PATH}:/fhost_db_data
+      - ${BACKUP_PATH}:/backup
     command: >-
       sh -c "
         cd /upload_data && tar -czf /backup/upload_data_$${TARGET}.tar.gz *;
@@ -66,9 +65,9 @@ services:
     environment:
       - TARGET=${TARGET}
     volumes:
-      - upload_volume:/upload_data
-      - fhost_db_volume:/fhost_db_data
-      - ./backup:/backup
+      - ${UPLOAD_VOLUME_PATH}:/upload_data
+      - ${DB_VOLUME_PATH}:/fhost_db_data
+      - ${BACKUP_PATH}:/backup
     command: >-
       sh -c "
         rm -rf /upload_data/* /upload_data/..?* /upload_data/.[!.]*;
